@@ -1,0 +1,116 @@
+---
+title: "BBM Project"
+author: "Evan Valdes"
+date: "2023-01-13"
+output: html_document
+---
+
+## Set Working Directory
+```{r}
+setwd("/Users/Evanvaldes1/Desktop/MASSEY/BBM/DATA")
+```
+
+## Load packages
+```{r}
+library(readr)
+library(styler)
+```
+
+## Load seperate datafiles for merging
+```{r}
+BBM_CVD_Risk_Halcyon <- read_csv("BBM data draft Massey encrypted/BBM CVD Risk Halcyon.csv")
+BBM_Entrance_Survey <- read_csv("BBM data draft Massey encrypted/BBM Entrance Survey.csv")
+BBM_Exit_Survey <- read_csv("BBM data draft Massey encrypted/BBM Exit Survey.csv")
+BBM_Health_Coach <- read_csv("BBM data draft Massey encrypted/BBM Health Coach.csv")
+BBM_Summary <- read_csv("BBM data draft Massey encrypted/BBM Summary.csv")
+BBM_Templates <- read_csv("BBM data draft Massey encrypted/BBM Templates.csv")
+BBM_Weekly_Weights <- read_csv("BBM data draft Massey encrypted/BBM Weekly Weights.csv")
+```
+
+## Load Merged dataset W/ Weekly Weights
+```{r}
+BBM_Merged <- read_csv("BBM_Merged_Draft_Data_With_Weeklyweights.csv.zip")
+```
+
+## Renaming Variable Name for summary and weekly weights data
+```{r}
+colnames(BBM_Summary)[1] = "Cohort Group"
+colnames(BBM_Health_Coach)[1] = "Cohort Group"
+colnames(BBM_Weekly_Weights)[1] = "Cohort Group"
+```
+
+## Renaming variables in BBM exit survey
+```{r}
+colnames(BBM_Exit_Survey)[3] = "About how many cigarettes do you smoke in a typical day?_w2"
+colnames(BBM_Exit_Survey)[4] = "Did you do any of the workouts and exercises from home in your own time?_w2"
+colnames(BBM_Exit_Survey)[5] = "Did you ever feel like you were in pain because of any exercises you did - was the gain worth the pain?_w2"
+colnames(BBM_Exit_Survey)[6] = "Did you lose any weight?_w2"
+colnames(BBM_Exit_Survey)[7] = "Did you miss any classes? If so why_w2"
+colnames(BBM_Exit_Survey)[8] = "Did you use any of the printouts or resources that were provided during the nutrition sessions?_w2"
+colnames(BBM_Exit_Survey)[9] = "Feeling bad about yourself — or that you are a failure or have let yourself or your family down_w2"
+colnames(BBM_Exit_Survey)[10] = "Feeling down, depressed, or hopeless_w2"
+colnames(BBM_Exit_Survey)[11] = "Feeling tired or having little energy_w2"
+colnames(BBM_Exit_Survey)[12] = "Having a poor appetite or overeating_w2"
+colnames(BBM_Exit_Survey)[13] = "Having little interest or pleasure in doing things_w2"
+colnames(BBM_Exit_Survey)[14] = "Having thoughts that you would be better off dead or of hurting yourself in some way_w2"
+colnames(BBM_Exit_Survey)[15] = "Having trouble concentrating on things, such as reading the newspaper or watching television_w2"
+colnames(BBM_Exit_Survey)[16] = "Having trouble falling or staying asleep, or sleeping too much_w2"
+colnames(BBM_Exit_Survey)[17] = "How difficult have any of these problems above made it for you to do your work, take care of things at home, or get along with other people?_w2"
+colnames(BBM_Exit_Survey)[18] = "How many BBM exercise sessions have you attended in total?_w2"
+colnames(BBM_Exit_Survey)[19] = "How many BBM nutrition session have you attended?_w2"
+colnames(BBM_Exit_Survey)[20] = "How many days a week do you drink alcohol?_w2"
+colnames(BBM_Exit_Survey)[21] = "How many times a day do you eat sweets (like chocolates, candy, cookies, etc.)?_w2"
+colnames(BBM_Exit_Survey)[22] = "How many times did you eat bread/carbs this week?_w2"
+colnames(BBM_Exit_Survey)[23] = "How many times did you eat take aways at fast food restaurants this week?_w2"
+colnames(BBM_Exit_Survey)[24] = "How many times did you have Fizzy drinks this week?_w2"
+colnames(BBM_Exit_Survey)[25] = "If so, which ones?_w2"
+colnames(BBM_Exit_Survey)[26] = "If so, which ones?_1_w2"
+colnames(BBM_Exit_Survey)[27] = "If yes, how many kg_w2"
+colnames(BBM_Exit_Survey)[28] = "Moving or speaking so slowly that other people could have noticed? Or the opposite being so fidgety or restless that you have been moving around a lot more than usual_w2"
+colnames(BBM_Exit_Survey)[29] = "On a rating scale of 1 to 5 - Did the From the Couch Program meet your expectations for improving your health?_w2"
+colnames(BBM_Exit_Survey)[30] = "Please finish this sentence: Now that I've completed the 12 week FTC program, I plan to_w2"
+colnames(BBM_Exit_Survey)[31] = "What did you enjoy about the FTC program_w2"
+colnames(BBM_Exit_Survey)[32] = "When you drink alcohol, how many drinks do you usually have? (1 drink=1 can of beer or a small glass of wine)?_w2"
+colnames(BBM_Exit_Survey)[33] = "Would you be interested in participating in future research, following up on your health?_w2"
+```
+
+## Joining datasets
+```{r}
+d1 <- merge(BBM_Entrance_Survey, BBM_Exit_Survey, by = c("NHINO", "Cohort Group"), all = T)
+d2 <- merge(d1, BBM_Health_Coach, by = c("NHINO", "Cohort Group"), all = T)
+d3 <- merge(d2, BBM_Templates, by = c("NHINO", "Cohort Group"), all = T)
+d4 <- merge(d3, BBM_CVD_Risk_Halcyon, by = c("NHINO", "Cohort Group"), all = T)
+fulldata_withoutweeklyweights <- merge(d4, BBM_Summary, by = c("NHINO", "Cohort Group"), all = T)
+
+Fulldata <- merge(d5, BBM_Weekly_Weights, all = T)
+
+Fulldata$`Cohort Group` <- as.factor(Fulldata$`Cohort Group`)
+```
+
+## reordering cohort group column
+```{r}
+library(dplyr)
+
+Fulldata <- Fulldata %>% arrange(`Cohort Group`)
+
+fulldata_withoutweeklyweights <- fulldata_withoutweeklyweights %>%
+        arrange(`Cohort Group`)
+
+```
+
+## Writing completed dataset to CSV
+```{r}
+write.csv(Fulldata, file = "BBM_Merged_Draft_Data_W_Weeklyweights.csv", row.names = F)
+write.csv(fulldata_withoutweeklyweights, file = "BBM_Merged_Draft_Data_without_Weeklyweights.csv", row.names = F)
+```
+
+
+## ANALYSIS USING MERGED DATA
+##________________________________________________________________________________________
+```{r}
+BBM_Merged$`Cohort Group` <- as.factor(BBM_Merged$`Cohort Group`)
+```
+
+## Common demoninators across cohorts in weekly weights
+## Focus anly analysis that uses weekly weights using
+## Week 1 / 6 / 12 across cohorts 2 and 3
