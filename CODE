@@ -14,6 +14,7 @@ setwd("/Users/Evanvaldes1/Desktop/MASSEY/BBM/DATA")
 ```{r}
 library(readr)
 library(styler)
+library(dplyr)
 ```
 
 ## Load seperate datafiles for merging
@@ -111,6 +112,26 @@ write.csv(fulldata_withoutweeklyweights, file = "BBM_Merged_Draft_Data_without_W
 BBM_Merged$`Cohort Group` <- as.factor(BBM_Merged$`Cohort Group`)
 ```
 
+## Subset of participants who completed bbm template "bbm" variable
+```{r}
+MISSINGTEMPLATE_DATA <- BBM_Merged %>% filter(BBM == "NA") ## Need to find solution
+COMPLETEDTEMPLATE_DATA <- subset(BBM_Merged, BBM == 1)
+```
+
+## Subset of participants who completed cohorts 2 and 3
+```{r}
+colnames(BBM_Merged)[2] = "Cohort_Group"
+
+COMPLETEDBOTHCOHORTS <- BBM_Merged %>% 
+        group_by(NHINO) %>% filter(all(c("Cohort 2 - May 2022", "Cohort 3 - September 2022") %in% Cohort_Group))
+```
+
+
 ## Common demoninators across cohorts in weekly weights
 ## Focus anly analysis that uses weekly weights using
 ## Week 1 / 6 / 12 across cohorts 2 and 3
+
+## Subtsets of data getting only weekly weights for 1 / 6 / 12
+```{r}
+
+```
