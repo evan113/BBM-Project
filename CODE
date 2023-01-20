@@ -12,11 +12,17 @@ setwd("/Users/Evanvaldes1/Desktop/MASSEY/BBM/DATA")
 
 ## Load packages
 ```{r}
-library(readr)
 library(styler)
-library(dplyr)
+library(haven)
+library(ggpubr)
+library(rstatix)
+library(lme4) # Anova
+library(lmerTest) # Better Anova output
+library(tidyverse)
+library(ggstatsplot)
 ```
 
+## DONT NEED TO RUN THIS ANYMORE - SCROLL DOWN TO MERGED DATA
 ## Load seperate datafiles for merging
 ```{r}
 BBM_CVD_Risk_Halcyon <- read_csv("BBM data draft Massey encrypted/BBM CVD Risk Halcyon.csv")
@@ -28,9 +34,12 @@ BBM_Templates <- read_csv("BBM data draft Massey encrypted/BBM Templates.csv")
 BBM_Weekly_Weights <- read_csv("BBM data draft Massey encrypted/BBM Weekly Weights.csv")
 ```
 
-## Load Merged dataset W/ Weekly Weights
+## Load in Cohort 2 entrance and exit data to convert to excel
 ```{r}
-BBM_Merged <- read_csv("BBM_Merged_Draft_Data_With_Weeklyweights.csv.zip")
+BBM_Survey <- read_sav("BBM Survey.sav")
+
+library(openxlsx)
+write.xlsx(BBM_Survey, "BBM_Survey.xlsx")
 ```
 
 ## Renaming Variable Name for summary and weekly weights data
@@ -108,30 +117,262 @@ write.csv(fulldata_withoutweeklyweights, file = "BBM_Merged_Draft_Data_without_W
 
 ## ANALYSIS USING MERGED DATA
 ##________________________________________________________________________________________
+
+## Load Merged dataset W/ Weekly Weights
+```{r}
+BBM_Merged <- read_csv("BBM_Merged_Draft_Data_With_Weeklyweights.csv.zip")
+```
+
 ```{r}
 BBM_Merged$`Cohort Group` <- as.factor(BBM_Merged$`Cohort Group`)
 ```
 
-## Subset of participants who completed bbm template "bbm" variable
+## Renaming columns
 ```{r}
-MISSINGTEMPLATE_DATA <- BBM_Merged %>% filter(BBM == "NA") ## Need to find solution
-COMPLETEDTEMPLATE_DATA <- subset(BBM_Merged, BBM == 1)
+colnames(BBM_Merged)[2] = "Cohort_Group"
+colnames(BBM_Merged)[82] = "Total_Chol"
 ```
 
 ## Subset of participants who completed cohorts 2 and 3
 ```{r}
-colnames(BBM_Merged)[2] = "Cohort_Group"
-
 COMPLETEDBOTHCOHORTS <- BBM_Merged %>% 
         group_by(NHINO) %>% filter(all(c("Cohort 2 - May 2022", "Cohort 3 - September 2022") %in% Cohort_Group))
 ```
 
+## Subset of participants who completed bbm template "bbm" variable
+```{r}
+COMPLETEDTEMPLATE_DATA <- subset(BBM_Merged, BBM == 1)
+```
+
+## Creating a categorical variable for sessions attended (High / Medium / Low)
+## Low = 1 - 11 sessions / Medium = 12 - 22 sessions / High = 23 - 33 sessions
+```{r}
+COMPLETEDTEMPLATE_DATA$Cat_Sessions = NA
+COMPLETEDTEMPLATE_DATA$Cat_Sessions = cut(
+        COMPLETEDTEMPLATE_DATA$Sessions, breaks = c(
+                -Inf, 12, 22, Inf
+        ), labels = c("Low", "Medium", "High"))
+```
+
+## Caluclating potential outliers for variables of interest
+```{r}
+boxplot(COMPLETEDTEMPLATE_DATA$Weight)
+boxplot(COMPLETEDTEMPLATE_DATA$HbA1c.x)
+boxplot(COMPLETEDTEMPLATE_DATA$Sessions)
+boxplot(COMPLETEDTEMPLATE_DATA$Total_Chol)
+boxplot(COMPLETEDTEMPLATE_DATA$Diastolic_BP)
+boxplot(COMPLETEDTEMPLATE_DATA$Systolic_BP)
+
+## Removing outliers from data
+
+```
 
 ## Common demoninators across cohorts in weekly weights
 ## Focus anly analysis that uses weekly weights using
 ## Week 1 / 6 / 12 across cohorts 2 and 3
 
-## Subtsets of data getting only weekly weights for 1 / 6 / 12
+## Subsets of data getting only weekly weights for 1 / 6 / 12
 ```{r}
 
+```
+
+## ANALYSES
+## Bar / Scatter plots
+```{r}
+## Weight and session attendance
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Cat_Sessions) %>%
+        filter(Cat_Sessions != "Medium" & Weight > 1) %>% 
+        ggplot(aes(x = Sessions,
+                   y = Weight,
+                   colour = Cat_Sessions)) +
+        geom_point() +
+        geom_smooth(method = lm, se = F) +
+        theme_minimal()+
+        labs(x = "Sessions",
+             y = "Weight",
+             title = "Weight Loss Per Session Count")
+
+## HBA1C
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Sessions) %>%
+        filter(HbA1c.x > 1) %>% 
+        ggplot(aes(x = Sessions, 
+                   y = HbA1c.x, 
+                   colour = Cat_Sessions)) +
+       geom_point() +
+        geom_smooth(method =  lm, se = F) +
+        theme_minimal() +
+        labs(x = "Sessions",
+             y = "HbA1C",
+             title = "HbA1C per Session Count")
+
+## Diastolic BP
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Cat_Sessions) %>%
+        ggplot(aes(x = Cat_Sessions,
+                   y = Diastolic_BP, 
+                   colour = Cohort_Group)) + 
+      geom_boxplot() +
+        theme_minimal() +
+        labs(x = "Sessions",
+             y = "Diastolic BP", 
+             title = "Diastolic BP per Session Count")
+
+
+## Systolic BP
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Systolic_BP, Sessions) %>%
+        ggplot(aes(x = Cat_Sessions, 
+                   y = Systolic_BP,
+                   colour = Cohort_Group)) +
+       geom_boxplot() +
+        theme_minimal() +
+        labs(x = "Sessions",
+             y = "Systolic BP", 
+             title = "Systolic BP per Session Count")
+
+## Cholesterol 
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Total_Chol, Sessions) %>%
+        ggplot(aes(x = Sessions,
+                   y = Total_Chol, 
+                   colour = Cohort_Group)) + 
+        geom_point() +
+        geom_smooth(method = lm, se = F)
+        theme_minimal() +
+        labs(x = "Sessions",
+             y = "Cholesterol", 
+             title = "Cholesterol per Session Count")
+       
+
+## Psychological well-being 
+## Changing factor order for depression factors
+COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless` <- 
+        as.factor(COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless`)        
+
+COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2` <-
+        as.factor(COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2`)
+        
+COMPLETEDTEMPLATE_DATA <- COMPLETEDTEMPLATE_DATA %>% 
+         mutate(`Feeling down, depressed, or hopeless` = factor(
+                 `Feeling down, depressed, or hopeless`, levels = c(
+                         "Nearly Every Day", "Several Days", "More Than Half the Days", "Not at All"
+                 )
+         ))
+
+COMPLETEDTEMPLATE_DATA <- COMPLETEDTEMPLATE_DATA %>% 
+        mutate(`Feeling down, depressed, or hopeless_w2` = factor(
+                `Feeling down, depressed, or hopeless_w2`, levels = c(
+                        "Several Days", "More Than Half the Days", 
+                        "Not at All"
+                )
+        ))
+        
+
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(`Feeling down, depressed, or hopeless`,
+                `Feeling down, depressed, or hopeless_w2`,
+                Cat_Sessions, Sessions) %>%
+        ggplot(aes(x = Sessions,
+                   y = `Feeling down, depressed, or`))+
+        geom_boxplot()
+
+```
+
+##Repeated measures analysis of variance (ANOVA)
+## Looking at cohort differences and attendence differences
+## Bar chart and or scatter plot to visualize 
+```{r}
+## Packages needed
+
+## Removing scientific notation
+options(scipen = 999)
+```
+
+## Summary Stats
+```{r}
+## Weight
+COMPLETEDTEMPLATE_DATA %>%
+        group_by(Cat_Sessions) %>%
+        get_summary_stats(Weight, type = "mean_sd")
+
+## HBA1C
+COMPLETEDTEMPLATE_DATA %>%
+        group_by(Cat_Sessions) %>%
+        get_summary_stats(HbA1c.x, type = "mean_sd")
+
+## Diastolic BP
+COMPLETEDTEMPLATE_DATA %>%
+        group_by(Cat_Sessions) %>%
+        get_summary_stats(Diastolic_BP, type = "mean_sd")
+
+## Systolic BP
+COMPLETEDTEMPLATE_DATA %>%
+        group_by(Cat_Sessions) %>%
+        get_summary_stats(Systolic_BP, type = "mean_sd")
+
+## Cholesterol 
+COMPLETEDTEMPLATE_DATA %>%
+        group_by(Cat_Sessions) %>%
+        get_summary_stats(Total_Chol, type = "mean_sd")
+
+## Psychological well-being
+```
+
+## Repeated Measures Analysis of Variance (ANOVA)
+```{r}
+## Weight
+RMA_weightmodel <- lmer(Weight ~ Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+anova(RMA_weightmodel)
+
+## HBA1C
+RMA_Hb1c <- lmer(HbA1c.x ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+anova(RMA_Hb1c)
+
+##Diastolic BP
+RMA_diastolic <- lmer(Diastolic_BP ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+anova(RMA_diastolic)
+
+##Systolic BP
+RMA_systolic <- lmer(Systolic_BP ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+anova(RMA_systolic)
+
+## Cholesterol 
+RMA_chol <- lmer(Total_Chol ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+anova(RMA_chol)
+
+## Psychological Well-Being
+
+```
+
+## HBA1C Repeated measures ANOVA
+```{r}
+
+```
+
+## Blood pressure
+```{r}
+
+```
+
+## Psychological Well being
+```{r}
+
+```
+
+## ANALYSES SPECIFIC TO PARITICPANTS WHO COMPLETED BOTH COHORTS
+```{r}
+
+```
+
+## code to remember for writing scatters in ggplot
+```{r}
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Weight, Sessions) %>%
+        ggplot(aes(x = Sessions,
+                   y = Weight,
+                   colour = Cat_Sessions)) +
+        geom_point() +
+        geom_smooth(method = lm, se = F)
 ```
