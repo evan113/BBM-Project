@@ -150,8 +150,8 @@ COMPLETEDTEMPLATE_DATA <- subset(BBM_Merged, BBM == 1)
 COMPLETEDTEMPLATE_DATA$Cat_Sessions = NA
 COMPLETEDTEMPLATE_DATA$Cat_Sessions = cut(
         COMPLETEDTEMPLATE_DATA$Sessions, breaks = c(
-                -Inf, 12, 22, Inf
-        ), labels = c("Low", "Medium", "High"))
+                -Inf, 12, Inf
+        ), labels = c("Low", "High"))
 ```
 
 ## Caluclating potential outliers for variables of interest
@@ -180,9 +180,9 @@ boxplot(COMPLETEDTEMPLATE_DATA$Systolic_BP)
 ## Bar / Scatter plots
 ```{r}
 ## Weight and session attendance
-COMPLETEDTEMPLATE_DATA %>%
+Weight1 <- COMPLETEDTEMPLATE_DATA %>%
         drop_na(Cat_Sessions) %>%
-        filter(Cat_Sessions != "Medium" & Weight > 1) %>% 
+        filter(Weight > 1) %>% 
         ggplot(aes(x = Sessions,
                    y = Weight,
                    colour = Cat_Sessions)) +
@@ -191,10 +191,27 @@ COMPLETEDTEMPLATE_DATA %>%
         theme_minimal()+
         labs(x = "Sessions",
              y = "Weight",
+             colour = "Session Attendance 
+             1-12 & 13-33",
+             title = "Weight Loss Per Session Count", 
+             subtitle = "F(1, 671) = 5.734, p < .05 *")
+
+Weight2 <- COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Cat_Sessions) %>%
+        filter(Weight > 1) %>% 
+        ggplot(aes(x = Sessions,
+                   y = Weight)) +
+        geom_point() +
+        geom_smooth(method = lm, se = F) +
+        theme_minimal()+
+        labs(x = "Sessions",
+             y = "Weight",
+             colour = "Session Attendance 
+             1-12 & 13-33",
              title = "Weight Loss Per Session Count")
 
 ## HBA1C
-COMPLETEDTEMPLATE_DATA %>%
+hba1c <- COMPLETEDTEMPLATE_DATA %>%
         drop_na(Sessions) %>%
         filter(HbA1c.x > 1) %>% 
         ggplot(aes(x = Sessions, 
@@ -205,10 +222,13 @@ COMPLETEDTEMPLATE_DATA %>%
         theme_minimal() +
         labs(x = "Sessions",
              y = "HbA1C",
-             title = "HbA1C per Session Count")
+             colour = "Session Attendance
+             1-12 & 13-33",
+             title = "HbA1C per Session Count",
+             subtitle = "F(1, 56) = 1.332, p > .05")
 
 ## Diastolic BP
-COMPLETEDTEMPLATE_DATA %>%
+diastolic <- COMPLETEDTEMPLATE_DATA %>%
         drop_na(Cat_Sessions) %>%
         ggplot(aes(x = Cat_Sessions,
                    y = Diastolic_BP, 
@@ -216,12 +236,17 @@ COMPLETEDTEMPLATE_DATA %>%
       geom_boxplot() +
         theme_minimal() +
         labs(x = "Sessions",
-             y = "Diastolic BP", 
-             title = "Diastolic BP per Session Count")
+             y = "Diastolic BP",
+             colour = "Cohort",
+             title = "Diastolic BP per Session Count", 
+             subtitle = "F(1, 68) = .992, p > .05
+             Interaction F(1, 125) = 14.391, p < .001***") +
+        scale_x_discrete(labels=c("Low" = "Low 0-12", "High" = "High 13-33"))
+
 
 
 ## Systolic BP
-COMPLETEDTEMPLATE_DATA %>%
+Systolic <- COMPLETEDTEMPLATE_DATA %>%
         drop_na(Systolic_BP, Sessions) %>%
         ggplot(aes(x = Cat_Sessions, 
                    y = Systolic_BP,
@@ -230,22 +255,107 @@ COMPLETEDTEMPLATE_DATA %>%
         theme_minimal() +
         labs(x = "Sessions",
              y = "Systolic BP", 
-             title = "Systolic BP per Session Count")
+             colour = "Cohort",
+             title = "Systolic BP per Session Count",
+             subtitle = "F(1, 62) = 7.479, p = .008 **
+             Interaction F(1, 156) = 2.334, p > .05") +
+        scale_x_discrete(labels=c("Low" = "Low 0-12", "High" = "High 13-33"))
 
 ## Cholesterol 
-COMPLETEDTEMPLATE_DATA %>%
+Cholesterol <- COMPLETEDTEMPLATE_DATA %>%
         drop_na(Total_Chol, Sessions) %>%
+        filter(Total_Chol > 1) %>% 
         ggplot(aes(x = Sessions,
                    y = Total_Chol, 
                    colour = Cohort_Group)) + 
         geom_point() +
-        geom_smooth(method = lm, se = F)
+        geom_smooth(method = lm, se = F) +
         theme_minimal() +
         labs(x = "Sessions",
              y = "Cholesterol", 
-             title = "Cholesterol per Session Count")
+             colour = "Cohort",
+             title = "Cholesterol per Session Count",
+             subtitle = "F(1, 59) = 16.094, p < .001 ***
+             Interaction F(1, 597) = 6.498, p < .05 *") 
        
+```
 
+## Saving figures as word doc for data presentation
+```{r}
+library(officer)
+## Weight
+ggsave("Weight1.png",
+       Weight1, width = 4, height = 3, units = "in")
+
+weight1_word_doc <- read_docx()
+weight1_word_doc <- body_add_img(weight1_word_doc,
+                                 src = "Weight1.png",
+                                 width = 4,
+                                 height = 3)
+
+print(weight1_word_doc, target = "weight1_doc.docx")
+
+ggsave("Weight2.png",
+       Weight2, width = 4, height = 3, units = "in")
+
+weight2_word_doc <- read_docx()
+weight2_word_doc <- body_add_img(weight2_word_doc,
+                                 src = "Weight2.png",
+                                 width = 4,
+                                 height = 3)
+
+print(weight2_word_doc, target = "weight2_doc.docx")
+
+## HBA1
+ggsave("hba1c.png",
+       hba1c, width = 4, height = 3, units = "in")
+
+hba1c_word_doc <- read_docx()
+hba1c_word_doc <- body_add_img(hba1c_word_doc,
+                               src = "hba1c.png",
+                               width = 4,
+                               height = 3)
+
+print(hba1c_word_doc, target = "hba1c_doc.docx")
+
+## Diastolic BP
+ggsave("diastolic.png",
+       diastolic, width = 4, height = 3, units = "in")
+
+diastolic_word_doc <- read_docx()
+diastolic_word_doc <- body_add_img(diastolic_word_doc,
+                                   src = "diastolic.png",
+                                   width = 4, 
+                                   height = 3)
+
+print(diastolic_word_doc, target = "diastolic_doc.docx")
+
+## Systolic
+ggsave("systolic.png",
+       Systolic, width = 4, height = 3, units = "in")
+
+systolic_word_doc <- read_docx()
+systolic_word_doc <- body_add_img(systolic_word_doc,
+                                  src = "systolic.png",
+                                  width = 4,
+                                  height = 3)
+
+print(systolic_word_doc, target = "systolic_doc.docx")
+
+##Cholesterol
+ggsave("cholesterol.png",
+       Cholesterol, width = 4, height = 3, units = "in")
+
+cholesterol_word_doc <- read_docx()
+cholesterol_word_doc <- body_add_img(cholesterol_word_doc,
+                                     src = "cholesterol.png",
+                                     width = 4,
+                                     height = 3)
+
+print(cholesterol_word_doc, target = "cholesterol_doc.docx")
+```
+
+```{r}
 ## Psychological well-being 
 ## Changing factor order for depression factors
 COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless` <- 
@@ -283,12 +393,6 @@ COMPLETEDTEMPLATE_DATA %>%
 ##Repeated measures analysis of variance (ANOVA)
 ## Looking at cohort differences and attendence differences
 ## Bar chart and or scatter plot to visualize 
-```{r}
-## Packages needed
-
-## Removing scientific notation
-options(scipen = 999)
-```
 
 ## Summary Stats
 ```{r}
@@ -321,6 +425,7 @@ COMPLETEDTEMPLATE_DATA %>%
 ```
 
 ## Repeated Measures Analysis of Variance (ANOVA)
+## Repporting - F(Df , df) = F, p < or =
 ```{r}
 ## Weight
 RMA_weightmodel <- lmer(Weight ~ Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
@@ -331,15 +436,15 @@ RMA_Hb1c <- lmer(HbA1c.x ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DA
 anova(RMA_Hb1c)
 
 ##Diastolic BP
-RMA_diastolic <- lmer(Diastolic_BP ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+RMA_diastolic <- lmer(Diastolic_BP ~ Cat_Sessions + Cohort_Group* Cat_Sessions+ (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
 anova(RMA_diastolic)
 
 ##Systolic BP
-RMA_systolic <- lmer(Systolic_BP ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+RMA_systolic <- lmer(Systolic_BP ~ Cat_Sessions + Cohort_Group*Cat_Sessions +  (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
 anova(RMA_systolic)
 
 ## Cholesterol 
-RMA_chol <- lmer(Total_Chol ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
+RMA_chol <- lmer(Total_Chol ~ Cat_Sessions + Cohort_Group*Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
 anova(RMA_chol)
 
 ## Psychological Well-Being
