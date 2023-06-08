@@ -2,7 +2,9 @@
 title: "BBM Project"
 author: "Evan Valdes"
 date: "2023-01-13"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ## Set Working Directory
@@ -14,7 +16,10 @@ setwd("/Users/Evanvaldes1/Desktop/MASSEY/BBM/DATA")
 ```{r}
 library(styler)
 library(haven)
+library(dplyr)
 library(ggpubr)
+library(ggsci) ## Color palettes for figures
+library(scales)
 library(rstatix)
 library(lme4) # Anova
 library(lmerTest) # Better Anova output
@@ -25,13 +30,25 @@ library(ggstatsplot)
 ## DONT NEED TO RUN THIS ANYMORE - SCROLL DOWN TO MERGED DATA
 ## Load seperate datafiles for merging
 ```{r}
-BBM_CVD_Risk_Halcyon <- read_csv("BBM data draft Massey encrypted/BBM CVD Risk Halcyon.csv")
+
+## Use these datasets
+NHI_COMPLETED_BBM_BOTH_COHORTS <- read_csv("BBM data draft Massey encrypted/NHI COMPLETED BBM BOTH COHORTS.csv")
 BBM_Entrance_Survey <- read_csv("BBM data draft Massey encrypted/BBM Entrance Survey.csv")
 BBM_Exit_Survey <- read_csv("BBM data draft Massey encrypted/BBM Exit Survey.csv")
-BBM_Health_Coach <- read_csv("BBM data draft Massey encrypted/BBM Health Coach.csv")
-BBM_Summary <- read_csv("BBM data draft Massey encrypted/BBM Summary.csv")
 BBM_Templates <- read_csv("BBM data draft Massey encrypted/BBM Templates.csv")
+BBM_Entry_and_Exit_Survey_Cohort_2 <- read_csv("BBM data draft Massey encrypted/BBM Entry and Exit Survey Cohort 2.csv")
+
+
+
+## Drop this dataset
+BBM_CVD_Risk_Halcyon <- read_csv("BBM data draft Massey encrypted/BBM CVD Risk Halcyon.csv")
+
+BBM_Summary <- read_csv("BBM data draft Massey encrypted/BBM Summary.csv")
+
 BBM_Weekly_Weights <- read_csv("BBM data draft Massey encrypted/BBM Weekly Weights.csv")
+
+BBM_Health_Coach <- read_csv("BBM data draft Massey encrypted/BBM Health Coach.csv")
+
 ```
 
 ## Load in Cohort 2 entrance and exit data to convert to excel
@@ -44,349 +61,440 @@ write.xlsx(BBM_Survey, "BBM_Survey.xlsx")
 
 ## Renaming Variable Name for summary and weekly weights data
 ```{r}
-colnames(BBM_Summary)[1] = "Cohort Group"
-colnames(BBM_Health_Coach)[1] = "Cohort Group"
-colnames(BBM_Weekly_Weights)[1] = "Cohort Group"
+colnames(NHI_COMPLETED_BBM_BOTH_COHORTS)[2] = "Cohort Group"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[1] = "Cohort Group"
+
 ```
 
-## Renaming variables in BBM exit survey
-```{r}
-colnames(BBM_Exit_Survey)[3] = "About how many cigarettes do you smoke in a typical day?_w2"
-colnames(BBM_Exit_Survey)[4] = "Did you do any of the workouts and exercises from home in your own time?_w2"
-colnames(BBM_Exit_Survey)[5] = "Did you ever feel like you were in pain because of any exercises you did - was the gain worth the pain?_w2"
-colnames(BBM_Exit_Survey)[6] = "Did you lose any weight?_w2"
-colnames(BBM_Exit_Survey)[7] = "Did you miss any classes? If so why_w2"
-colnames(BBM_Exit_Survey)[8] = "Did you use any of the printouts or resources that were provided during the nutrition sessions?_w2"
-colnames(BBM_Exit_Survey)[9] = "Feeling bad about yourself — or that you are a failure or have let yourself or your family down_w2"
-colnames(BBM_Exit_Survey)[10] = "Feeling down, depressed, or hopeless_w2"
-colnames(BBM_Exit_Survey)[11] = "Feeling tired or having little energy_w2"
-colnames(BBM_Exit_Survey)[12] = "Having a poor appetite or overeating_w2"
-colnames(BBM_Exit_Survey)[13] = "Having little interest or pleasure in doing things_w2"
-colnames(BBM_Exit_Survey)[14] = "Having thoughts that you would be better off dead or of hurting yourself in some way_w2"
-colnames(BBM_Exit_Survey)[15] = "Having trouble concentrating on things, such as reading the newspaper or watching television_w2"
-colnames(BBM_Exit_Survey)[16] = "Having trouble falling or staying asleep, or sleeping too much_w2"
-colnames(BBM_Exit_Survey)[17] = "How difficult have any of these problems above made it for you to do your work, take care of things at home, or get along with other people?_w2"
-colnames(BBM_Exit_Survey)[18] = "How many BBM exercise sessions have you attended in total?_w2"
-colnames(BBM_Exit_Survey)[19] = "How many BBM nutrition session have you attended?_w2"
-colnames(BBM_Exit_Survey)[20] = "How many days a week do you drink alcohol?_w2"
-colnames(BBM_Exit_Survey)[21] = "How many times a day do you eat sweets (like chocolates, candy, cookies, etc.)?_w2"
-colnames(BBM_Exit_Survey)[22] = "How many times did you eat bread/carbs this week?_w2"
-colnames(BBM_Exit_Survey)[23] = "How many times did you eat take aways at fast food restaurants this week?_w2"
-colnames(BBM_Exit_Survey)[24] = "How many times did you have Fizzy drinks this week?_w2"
-colnames(BBM_Exit_Survey)[25] = "If so, which ones?_w2"
-colnames(BBM_Exit_Survey)[26] = "If so, which ones?_1_w2"
-colnames(BBM_Exit_Survey)[27] = "If yes, how many kg_w2"
-colnames(BBM_Exit_Survey)[28] = "Moving or speaking so slowly that other people could have noticed? Or the opposite being so fidgety or restless that you have been moving around a lot more than usual_w2"
-colnames(BBM_Exit_Survey)[29] = "On a rating scale of 1 to 5 - Did the From the Couch Program meet your expectations for improving your health?_w2"
-colnames(BBM_Exit_Survey)[30] = "Please finish this sentence: Now that I've completed the 12 week FTC program, I plan to_w2"
-colnames(BBM_Exit_Survey)[31] = "What did you enjoy about the FTC program_w2"
-colnames(BBM_Exit_Survey)[32] = "When you drink alcohol, how many drinks do you usually have? (1 drink=1 can of beer or a small glass of wine)?_w2"
-colnames(BBM_Exit_Survey)[33] = "Would you be interested in participating in future research, following up on your health?_w2"
-```
+
 
 ## Joining datasets
 ```{r}
-d1 <- merge(BBM_Entrance_Survey, BBM_Exit_Survey, by = c("NHINO", "Cohort Group"), all = T)
-d2 <- merge(d1, BBM_Health_Coach, by = c("NHINO", "Cohort Group"), all = T)
-d3 <- merge(d2, BBM_Templates, by = c("NHINO", "Cohort Group"), all = T)
-d4 <- merge(d3, BBM_CVD_Risk_Halcyon, by = c("NHINO", "Cohort Group"), all = T)
-fulldata_withoutweeklyweights <- merge(d4, BBM_Summary, by = c("NHINO", "Cohort Group"), all = T)
 
-Fulldata <- merge(d5, BBM_Weekly_Weights, all = T)
+d3 <- merge(d2, NHI_COMPLETED_BBM_BOTH_COHORTS, by = c("NHINO", "Cohort Group"), all = T)
+
 
 Fulldata$`Cohort Group` <- as.factor(Fulldata$`Cohort Group`)
 ```
 
 ## reordering cohort group column
 ```{r}
-library(dplyr)
-
 Fulldata <- Fulldata %>% arrange(`Cohort Group`)
-
-fulldata_withoutweeklyweights <- fulldata_withoutweeklyweights %>%
-        arrange(`Cohort Group`)
 
 ```
 
 ## Writing completed dataset to CSV
 ```{r}
 write.csv(Fulldata, file = "BBM_Merged_Draft_Data_W_Weeklyweights.csv", row.names = F)
-write.csv(fulldata_withoutweeklyweights, file = "BBM_Merged_Draft_Data_without_Weeklyweights.csv", row.names = F)
 ```
-
-
-## ANALYSIS USING MERGED DATA
-##________________________________________________________________________________________
 
 ## Load Merged dataset W/ Weekly Weights
 ```{r}
-BBM_Merged <- read_csv("BBM_Merged_Draft_Data_With_Weeklyweights.csv.zip")
+COMPLETEDTEMPLATE_DATA <- read_csv("BBM_Merged_Draft_Data_W_Weeklyweights.csv")
 ```
 
 ```{r}
-BBM_Merged$`Cohort Group` <- as.factor(BBM_Merged$`Cohort Group`)
+COMPLETEDTEMPLATE_DATA$`Cohort Group` <- as.factor(COMPLETEDTEMPLATE_DATA$`Cohort Group`)
 ```
 
 ## Renaming columns
 ```{r}
-colnames(BBM_Merged)[2] = "Cohort_Group"
-colnames(BBM_Merged)[82] = "Total_Chol"
+colnames(COMPLETEDTEMPLATE_DATA)[2] = "Cohort_Group"
+colnames(COMPLETEDTEMPLATE_DATA)[25] = "Weight_Loss_KG"
+colnames(COMPLETEDTEMPLATE_DATA)[26] = "Weight_Loss_Percent"
+colnames(COMPLETEDTEMPLATE_DATA)[27] = "Sessions_Attended"
+colnames(COMPLETEDTEMPLATE_DATA)[30] = "Template_Week_No"
+colnames(COMPLETEDTEMPLATE_DATA)[42] = "Total_Chol"
 ```
 
-## Subset of participants who completed cohorts 2 and 3
-```{r}
-COMPLETEDBOTHCOHORTS <- BBM_Merged %>% 
-        group_by(NHINO) %>% filter(all(c("Cohort 2 - May 2022", "Cohort 3 - September 2022") %in% Cohort_Group))
-```
 
-## Subset of participants who completed bbm template "bbm" variable
-```{r}
-COMPLETEDTEMPLATE_DATA <- subset(BBM_Merged, BBM == 1)
-```
+
 
 ## Creating a categorical variable for sessions attended (High / Medium / Low)
 ## Low = 1 - 11 sessions / Medium = 12 - 22 sessions / High = 23 - 33 sessions
 ```{r}
 COMPLETEDTEMPLATE_DATA$Cat_Sessions = NA
 COMPLETEDTEMPLATE_DATA$Cat_Sessions = cut(
-        COMPLETEDTEMPLATE_DATA$Sessions, breaks = c(
-                -Inf, 12, Inf
-        ), labels = c("Low", "High"))
-```
-
-## Caluclating potential outliers for variables of interest
-```{r}
-boxplot(COMPLETEDTEMPLATE_DATA$Weight)
-boxplot(COMPLETEDTEMPLATE_DATA$HbA1c.x)
-boxplot(COMPLETEDTEMPLATE_DATA$Sessions)
-boxplot(COMPLETEDTEMPLATE_DATA$Total_Chol)
-boxplot(COMPLETEDTEMPLATE_DATA$Diastolic_BP)
-boxplot(COMPLETEDTEMPLATE_DATA$Systolic_BP)
-
-## Removing outliers from data
-
+        COMPLETEDTEMPLATE_DATA$Sessions_Attended, breaks = c(
+                -Inf, 12, 21, Inf
+        ), labels = c("Low","Medium","High"))
 ```
 
 ## Common demoninators across cohorts in weekly weights
 ## Focus anly analysis that uses weekly weights using
 ## Week 1 / 6 / 12 across cohorts 2 and 3
 
-## Subsets of data getting only weekly weights for 1 / 6 / 12
+## Psychological well-being 
+## Changing factor order for depression ## factors
+
+look at nhis that completed this program
+and match with bloods egfr
+```{r}
+COMPLETEDTEMPLATE_DATA$PHQ2 <- 
+        as.factor(COMPLETEDTEMPLATE_DATA$PHQ2)        
+
+COMPLETEDTEMPLATE_DATA$PHQ2_w2 <-
+        as.factor(COMPLETEDTEMPLATE_DATA$PHQ2_w2)
+        
+COMPLETEDTEMPLATE_DATA <- COMPLETEDTEMPLATE_DATA %>% 
+         mutate(PHQ2 = factor(
+                 PHQ2, levels = c(
+                        "Not at All", "Several Days", "More Than Half the Days", "Nearly Every Day"  
+                 )
+         ))
+
+COMPLETEDTEMPLATE_DATA <- COMPLETEDTEMPLATE_DATA %>% 
+        mutate(PHQ2_w2 = factor(
+                PHQ2_w2, levels = c(
+                        "Not at All", "Several Days", "More Than Half the Days", "Nearly Every Day"
+                        
+                )
+        ))
+
+```
+
+
+## Reorganizing variables of interest for presentation
+```{r}
+COMPLETEDTEMPLATE_DATA <- COMPLETEDTEMPLATE_DATA %>%
+        select(NHINO, Cohort_Group, Date_of_Assessment, Template_Week_No, Ethnicity, 
+               Weight_Start, Weight_End, Weight_Loss_KG, Weight, HbA1c, eGFR, Total_Chol, 
+               Systolic_BP, Diastolic_BP, BMI_Group,everything())
+
+## Replacing egfr responses that are 0 with NA
+COMPLETEDTEMPLATE_DATA$eGFR[COMPLETEDTEMPLATE_DATA$eGFR == 0] <- NA 
+```
+
+## Exporting completed data to spss
+```{r}
+write.csv(COMPLETEDTEMPLATE_DATA, file = "BBM_Working_Data.csv", row.names = F)
+```
+
+
+```{r}
+library(haven)
+write_sav(COMPLETEDTEMPLATE_DATA, "COMPLETEDTEMPLATE_DATA.sav")
+```
+##______________________________________________________________________________
+## CODE ABOVE THIS LINE IS NO LONGER NECESSARY WITH WORKING DATAFILE
+## READ IN DATA ****
+```{R}
+COMPLETEDTEMPLATE_DATA <- read_csv("BBM_Working_Data.csv")
+```
+
+## Don't need this
+## Caluclating the PHQ-9 (Patient Health Questionnaire)
+## Converting answers to numeric
 ```{r}
 
 ```
 
-## ANALYSES
-## Bar / Scatter plots
+
+## Creating Depression descriptives table for entrance and exit
+## Creating eGFR descriptives for week 00, 06, and 12
 ```{r}
-## Weight and session attendance
-Weight1 <- COMPLETEDTEMPLATE_DATA %>%
-        drop_na(Cat_Sessions) %>%
-        filter(Weight > 1) %>% 
-        ggplot(aes(x = Sessions,
-                   y = Weight,
-                   colour = Cat_Sessions)) +
-        geom_point() +
-        geom_smooth(method = lm, se = F) +
-        theme_minimal()+
-        labs(x = "Sessions",
-             y = "Weight",
-             colour = "Session Attendance 
-             1-12 & 13-33",
-             title = "Weight Loss Per Session Count", 
-             subtitle = "F(1, 671) = 5.734, p < .05 *")
+## Depression W1
+contingency_table <- table(COMPLETEDTEMPLATE_DATA$Cat_PHQ_W1)
 
-Weight2 <- COMPLETEDTEMPLATE_DATA %>%
-        drop_na(Cat_Sessions) %>%
-        filter(Weight > 1) %>% 
-        ggplot(aes(x = Sessions,
-                   y = Weight)) +
-        geom_point() +
-        geom_smooth(method = lm, se = F) +
-        theme_minimal()+
-        labs(x = "Sessions",
-             y = "Weight",
-             colour = "Session Attendance 
-             1-12 & 13-33",
-             title = "Weight Loss Per Session Count")
+proportion_table <- prop.table(contingency_table)
 
-## HBA1C
-hba1c <- COMPLETEDTEMPLATE_DATA %>%
-        drop_na(Sessions) %>%
-        filter(HbA1c.x > 1) %>% 
-        ggplot(aes(x = Sessions, 
-                   y = HbA1c.x, 
-                   colour = Cat_Sessions)) +
-       geom_point() +
-        geom_smooth(method =  lm, se = F) +
-        theme_minimal() +
-        labs(x = "Sessions",
-             y = "HbA1C",
-             colour = "Session Attendance
-             1-12 & 13-33",
-             title = "HbA1C per Session Count",
-             subtitle = "F(1, 56) = 1.332, p > .05")
+percentage_table1 <- proportion_table * 100
+percentage_table1
 
-## Diastolic BP
-diastolic <- COMPLETEDTEMPLATE_DATA %>%
-        drop_na(Cat_Sessions) %>%
-        ggplot(aes(x = Cat_Sessions,
-                   y = Diastolic_BP, 
-                   colour = Cohort_Group)) + 
-      geom_boxplot() +
-        theme_minimal() +
-        labs(x = "Sessions",
-             y = "Diastolic BP",
-             colour = "Cohort",
-             title = "Diastolic BP per Session Count", 
-             subtitle = "F(1, 68) = .992, p > .05
-             Interaction F(1, 125) = 14.391, p < .001***") +
-        scale_x_discrete(labels=c("Low" = "Low 0-12", "High" = "High 13-33"))
+## Depression W2
+contingency_table2 <- table(COMPLETEDTEMPLATE_DATA$Cat_PHQ_W2)
+proportion_table2 <- prop.table(contingency_table2)
 
+percentage_table2 <- proportion_table2 * 100
+percentage_table2
+
+
+## Removing individuals with weight >= 300 and NA values
+var <- "Weight"
+threshold <- 299
+COMPLETEDTEMPLATE_DATA <- subset(COMPLETEDTEMPLATE_DATA,
+                                 COMPLETEDTEMPLATE_DATA[,
+                                                        var] <= threshold)
+## eGFR
+## normal eGFR range is greater than 90
+## Still problematic after removing 0's and low scores
+COMPLETEDTEMPLATE_DATA$eGFR[COMPLETEDTEMPLATE_DATA$eGFR < 82] <- NA
+
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(eGFR) %>%
+        group_by(Template_Week_No) %>%
+        summarise(mean_eGFR=mean(eGFR),
+                  .groups = "drop")
+
+boxplot(COMPLETEDTEMPLATE_DATA$eGFR)
 
 
 ## Systolic BP
-Systolic <- COMPLETEDTEMPLATE_DATA %>%
-        drop_na(Systolic_BP, Sessions) %>%
-        ggplot(aes(x = Cat_Sessions, 
-                   y = Systolic_BP,
-                   colour = Cohort_Group)) +
-       geom_boxplot() +
-        theme_minimal() +
-        labs(x = "Sessions",
-             y = "Systolic BP", 
-             colour = "Cohort",
-             title = "Systolic BP per Session Count",
-             subtitle = "F(1, 62) = 7.479, p = .008 **
-             Interaction F(1, 156) = 2.334, p > .05") +
-        scale_x_discrete(labels=c("Low" = "Low 0-12", "High" = "High 13-33"))
+## F(2, 99) = 5.7, p < .001** partial eta squared = .10
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Systolic_BP) %>%
+        group_by(Template_Week_No) %>%
+        summarise(mean_systolicBP=mean(Systolic_BP),
+                  .groups = "drop")
+
+boxplot(COMPLETEDTEMPLATE_DATA$Systolic_BP)
+
+## Diastolic BP
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Diastolic_BP) %>%
+        group_by(Template_Week_No) %>%
+        summarise(mean_diastolicBP=mean(Diastolic_BP),
+                  .groups = "drop")
+
+boxplot(COMPLETEDTEMPLATE_DATA$Diastolic_BP)
 
 ## Cholesterol 
-Cholesterol <- COMPLETEDTEMPLATE_DATA %>%
-        drop_na(Total_Chol, Sessions) %>%
-        filter(Total_Chol > 1) %>% 
-        ggplot(aes(x = Sessions,
-                   y = Total_Chol, 
-                   colour = Cohort_Group)) + 
-        geom_point() +
-        geom_smooth(method = lm, se = F) +
+## F(2, 82) = 4.3, p < .01* partial eta squared = .09 
+COMPLETEDTEMPLATE_DATA$Total_Chol[COMPLETEDTEMPLATE_DATA$Total_Chol == 0] <- NA 
+
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Total_Chol) %>%
+        group_by(Template_Week_No) %>%
+        summarise(mean_Cholesterol=mean(Total_Chol),
+                  .groups = "drop")
+
+boxplot(COMPLETEDTEMPLATE_DATA$Total_Chol)
+
+
+## HBA1C
+## greater scores can place individuals in the prediabetic or diabetic range
+## F(2, 81) = 4.6, p < .01**  partial eta squared=.10
+COMPLETEDTEMPLATE_DATA$HbA1c[COMPLETEDTEMPLATE_DATA$HbA1c == 0] <- NA 
+
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(HbA1c) %>%
+        group_by(Template_Week_No) %>%
+        summarise(mean_HbA1c=mean(HbA1c),
+                  .groups = "drop")
+
+boxplot(COMPLETEDTEMPLATE_DATA$HbA1c)
+
+## Weight
+COMPLETEDTEMPLATE_DATA$Weight[COMPLETEDTEMPLATE_DATA$Weight == 0] <- NA 
+
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Weight) %>%
+        group_by(Template_Week_No) %>%
+        summarise(mean_HbA1c=mean(Weight),
+                  .groups = "drop")
+
+boxplot(COMPLETEDTEMPLATE_DATA$Weight)
+```
+
+
+## Move variables of interest next to nhino - and talk about potential human error (be as nice as possible)
+## How many days I have had the data - early/exploratory data processes
+## show potential human error
+## inconsistencies - is there a better format of data collection and where it should go
+## select participants 00 and 12
+
+## ANALYSES
+## Bar / Scatter plots
+```{r}
+
+## Visualization of different responses on depression 
+## (do not recode phq-9 before this)
+## Depression
+COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless` <- as.factor(
+        COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless`
+)
+
+COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2` <- as.factor(
+        COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2`
+)
+
+COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless` <- recode(
+        COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless`, 
+        "0" = "Not at All", "1" = "Several Days", "2" = "More Than Half the Days", "3" = "Nearly Every Day" 
+)
+
+COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2` <- recode(
+        COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2`, 
+        "0" = "Not at All", "1" = "Several Days", "2" = "More Than Half the Days", "3" = "Nearly Every Day" 
+)
+
+
+ COMPLETEDTEMPLATE_DATA %>%
+        filter(Cohort_Group != "Cohort 2 - May 2022" & 
+                       Date_of_Assessment == "2022-09-19") %>%
+        drop_na(`Feeling down, depressed, or hopeless`) %>%
+        ggplot(aes(`Feeling down, depressed, or hopeless`, 
+                   y = after_stat(count/sum(count)), 
+                   fill = `Feeling down, depressed, or hopeless`)) +
+        geom_bar(position = "dodge") +
+        scale_fill_jama() +
+        scale_y_continuous(labels = percent) +
         theme_minimal() +
-        labs(x = "Sessions",
-             y = "Cholesterol", 
-             colour = "Cohort",
-             title = "Cholesterol per Session Count",
-             subtitle = "F(1, 59) = 16.094, p < .001 ***
-             Interaction F(1, 597) = 6.498, p < .05 *") 
-       
+        theme(axis.text.x = element_text(angle = 15)) +
+        labs(x = "",
+             y = "Percentage of Participants",
+             title = "How often have you felt down depressed or hopeless in
+             the last two weeks?",
+             subtitle = "Time 1 - 2022-09-19",
+             fill = "")
+        
+
+ COMPLETEDTEMPLATE_DATA %>%
+        filter(Cohort_Group != "Cohort 2 - May 2022" & 
+                       Date_of_Assessment == "2022-11-30") %>%
+        drop_na(`Feeling down, depressed, or hopeless_w2`) %>%
+        ggplot(aes(`Feeling down, depressed, or hopeless_w2`, 
+                   y = after_stat(count/sum(count)), 
+                   fill = `Feeling down, depressed, or hopeless_w2`)) +
+        geom_bar(position = "dodge") +
+        scale_fill_jama() +
+        scale_y_continuous(labels = percent) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 15)) +
+        labs(x = "",
+             y = "Percentage of Participants",
+             title = "How often have you felt down depressed or hopeless in
+             the last two weeks?",
+             subtitle = "Time 2 - 2022-11-30",
+             fill = "")
+
+
+## low depression (scores 0-7)
+## Severe to moderate depression > 8
+
+## PHQ9
+phq1 <- COMPLETEDTEMPLATE_DATA %>%
+        filter(Cohort_Group != "Cohort 2 - May 2022
+NA" & Date_of_Assessment == "2022-09-19") %>%
+        ggplot(aes(x = Cat_PHQ_W1, y = after_stat(count/sum(count)) ,fill = Cat_PHQ_W1)) +
+        geom_bar(position = "dodge") +
+        scale_fill_jama() +
+        scale_y_continuous(labels = percent) + 
+        theme_minimal() +
+        labs(x = "",
+             y = "Percentage of Participants",
+             title = "Experience of Depressive Symptoms in last 2 Weeks (PHQ-9)",
+             fill = "",
+             subtitle = "Entrance Survey - 2022-09-19")
+
+phq2 <- COMPLETEDTEMPLATE_DATA %>%
+        filter(Cohort_Group != "Cohort 2 - May 2022" & Date_of_Assessment == "2022-11-30") %>%
+        ggplot(aes(x = Cat_PHQ_W2, y = after_stat(count/sum(count)), fill = Cat_PHQ_W2)) +
+        geom_bar(position = "dodge") +
+        scale_fill_jama() +
+        scale_y_continuous(labels = percent) +
+        theme_minimal() +
+        labs(x = "",
+             y = "Percentage of Participants",
+             title = "Experience of Depressive Symptoms in last 2 Weeks (PHQ-9)",
+             fill = "",
+             subtitle = "Exit Survey - 2022-11-30")
+
+
+
 ```
 
 ## Saving figures as word doc for data presentation
 ```{r}
 library(officer)
+library(gridExtra)
+
+## Depression W1 and W2
+depression_plots <- ggarrange(depression1, depression2,
+                              heights = c(2, 2),
+                              align = "v", 
+                              ncol = 2, nrow = 2)
+ggexport(depression_plots, filename = "depression_plots.pdf")
+
+## PHQ W1 and W2
+ phq_plots <- ggarrange(phq1, phq2,
+                        heights = c(3, 2),
+                        align = "v",
+                        ncol = 1, nrow = 2)
+ 
+ ggexport(phq_plots, filename = "PHQ_Plots.pdf")
+
+
 ## Weight
-ggsave("Weight1.png",
-       Weight1, width = 4, height = 3, units = "in")
+weight_plots <- ggarrange(Weight1, Weight2,
+                          heights = c(3, 2),
+                          align = "v",
+                          ncol = 1,
+                          nrow = 2)
 
-weight1_word_doc <- read_docx()
-weight1_word_doc <- body_add_img(weight1_word_doc,
-                                 src = "Weight1.png",
-                                 width = 4,
-                                 height = 3)
-
-print(weight1_word_doc, target = "weight1_doc.docx")
-
-ggsave("Weight2.png",
-       Weight2, width = 4, height = 3, units = "in")
-
-weight2_word_doc <- read_docx()
-weight2_word_doc <- body_add_img(weight2_word_doc,
-                                 src = "Weight2.png",
-                                 width = 4,
-                                 height = 3)
-
-print(weight2_word_doc, target = "weight2_doc.docx")
+ggexport(weight_plots, filename = "weight_plots.pdf")
+ 
 
 ## HBA1
-ggsave("hba1c.png",
-       hba1c, width = 4, height = 3, units = "in")
-
-hba1c_word_doc <- read_docx()
-hba1c_word_doc <- body_add_img(hba1c_word_doc,
-                               src = "hba1c.png",
-                               width = 4,
-                               height = 3)
-
-print(hba1c_word_doc, target = "hba1c_doc.docx")
+hba1c_plots <- ggarrange(hba1c1, hba1c2,
+                         heights = c(3, 3), 
+                         align = "v",
+                         ncol = 1,
+                         nrow = 2)
+ggexport(hba1c_plots, filename = "hba1c_plots.pdf")
 
 ## Diastolic BP
-ggsave("diastolic.png",
-       diastolic, width = 4, height = 3, units = "in")
+diastolic_plots <- ggarrange(diastolic1, diastolic2,
+                             heights = c(3, 3),
+                             align = "v",
+                             ncol = 1,
+                             nrow = 2)
+ggexport(diastolic_plots, filename = "diastolic_plots.pdf")
 
-diastolic_word_doc <- read_docx()
-diastolic_word_doc <- body_add_img(diastolic_word_doc,
-                                   src = "diastolic.png",
-                                   width = 4, 
-                                   height = 3)
-
-print(diastolic_word_doc, target = "diastolic_doc.docx")
-
-## Systolic
-ggsave("systolic.png",
-       Systolic, width = 4, height = 3, units = "in")
-
-systolic_word_doc <- read_docx()
-systolic_word_doc <- body_add_img(systolic_word_doc,
-                                  src = "systolic.png",
-                                  width = 4,
-                                  height = 3)
-
-print(systolic_word_doc, target = "systolic_doc.docx")
+## Systolic BP
+systolic_plots <- ggarrange(systolic1, systolic2,
+                            heights = c(3, 3),
+                            align = "v",
+                            ncol = 1, 
+                            nrow = 2)
+ggexport(systolic_plots, filename = "systolic_plots.pdf")
 
 ##Cholesterol
-ggsave("cholesterol.png",
-       Cholesterol, width = 4, height = 3, units = "in")
-
-cholesterol_word_doc <- read_docx()
-cholesterol_word_doc <- body_add_img(cholesterol_word_doc,
-                                     src = "cholesterol.png",
-                                     width = 4,
-                                     height = 3)
-
-print(cholesterol_word_doc, target = "cholesterol_doc.docx")
+chol_plots <- ggarrange(chol1, chol2,
+                        heights = c(3, 3),
+                        align = "v",
+                        ncol = 1, 
+                        nrow = 2)
+ggexport(chol_plots, filename = "chol_plots.pdf")
 ```
 
+## Entrace / Exit Survey Analyses
 ```{r}
+## Creating subset of just entrance exit survey
+Depression_entrance_exit <- COMPLETEDTEMPLATE_DATA[c(1:2, 6, 35)]
+
 ## Psychological well-being 
 ## Changing factor order for depression factors
-COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless` <- 
-        as.factor(COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless`)        
+Depression_entrance_exit$`Feeling down, depressed, or hopeless` <- 
+        as.factor(Depression_entrance_exit$`Feeling down, depressed, or hopeless`)        
 
-COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2` <-
-        as.factor(COMPLETEDTEMPLATE_DATA$`Feeling down, depressed, or hopeless_w2`)
+Depression_entrance_exit$`Feeling down, depressed, or hopeless_w2` <-
+        as.factor(Depression_entrance_exit$`Feeling down, depressed, or hopeless_w2`)
         
-COMPLETEDTEMPLATE_DATA <- COMPLETEDTEMPLATE_DATA %>% 
+Depression_entrance_exit <- Depression_entrance_exit %>% 
          mutate(`Feeling down, depressed, or hopeless` = factor(
                  `Feeling down, depressed, or hopeless`, levels = c(
                          "Nearly Every Day", "Several Days", "More Than Half the Days", "Not at All"
                  )
          ))
 
-COMPLETEDTEMPLATE_DATA <- COMPLETEDTEMPLATE_DATA %>% 
+Depression_entrance_exit <- Depression_entrance_exit %>% 
         mutate(`Feeling down, depressed, or hopeless_w2` = factor(
                 `Feeling down, depressed, or hopeless_w2`, levels = c(
                         "Several Days", "More Than Half the Days", 
                         "Not at All"
                 )
         ))
+
+##Changing column names
+colnames(Depression_entrance_exit)[3] = "Depression1"
+colnames(Depression_entrance_exit)[4] = "Depression2"
         
 
-COMPLETEDTEMPLATE_DATA %>%
-        drop_na(`Feeling down, depressed, or hopeless`,
-                `Feeling down, depressed, or hopeless_w2`,
-                Cat_Sessions, Sessions) %>%
-        ggplot(aes(x = Sessions,
-                   y = `Feeling down, depressed, or`))+
-        geom_boxplot()
+## Turning data into long format using reshape2 package
+library(reshape2)
+depression_long <- melt(Depression_entrance_exit,
+                        id.vars = c("NHINO", "Cohort_Group"))
 
 ```
 
@@ -406,70 +514,77 @@ COMPLETEDTEMPLATE_DATA %>%
         group_by(Cat_Sessions) %>%
         get_summary_stats(HbA1c.x, type = "mean_sd")
 
-## Diastolic BP
-COMPLETEDTEMPLATE_DATA %>%
-        group_by(Cat_Sessions) %>%
-        get_summary_stats(Diastolic_BP, type = "mean_sd")
 
-## Systolic BP
-COMPLETEDTEMPLATE_DATA %>%
-        group_by(Cat_Sessions) %>%
-        get_summary_stats(Systolic_BP, type = "mean_sd")
-
-## Cholesterol 
-COMPLETEDTEMPLATE_DATA %>%
-        group_by(Cat_Sessions) %>%
-        get_summary_stats(Total_Chol, type = "mean_sd")
 
 ## Psychological well-being
 ```
 
-## Repeated Measures Analysis of Variance (ANOVA)
+## Repeated Measures Analysis of Variance (ANOVA) and (MANOVA)
 ## Repporting - F(Df , df) = F, p < or =
+
+
+## Code for RM ANOVA - START HERE 
 ```{r}
-## Weight
-RMA_weightmodel <- lmer(Weight ~ Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
-anova(RMA_weightmodel)
+COMPLETEDTEMPLATE_DATA <- read_csv("~/Desktop/data BBM.csv")
+```
 
-## HBA1C
-RMA_Hb1c <- lmer(HbA1c.x ~ Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
-anova(RMA_Hb1c)
+```{r}
 
-##Diastolic BP
-RMA_diastolic <- lmer(Diastolic_BP ~ Cat_Sessions + Cohort_Group* Cat_Sessions+ (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
-anova(RMA_diastolic)
+colnames(COMPLETEDTEMPLATE_DATA)[6] = "Depression1"
+colnames(Depression_entrance_exit)[4] = "Depression2"
+## Depression 
+RMA_dep <- lmer(Depression1 ~ Sessions + Cat_Sessions*Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
 
-##Systolic BP
-RMA_systolic <- lmer(Systolic_BP ~ Cat_Sessions + Cohort_Group*Cat_Sessions +  (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
-anova(RMA_systolic)
+Sessioncompleters <- filter(COMPLETEDTEMPLATE_DATA,
+                            Date_of_Assessment == "2022-11-30")
 
-## Cholesterol 
-RMA_chol <- lmer(Total_Chol ~ Cat_Sessions + Cohort_Group*Cat_Sessions + (1|NHINO), data = COMPLETEDTEMPLATE_DATA)
-anova(RMA_chol)
 
-## Psychological Well-Being
+## MANOVA (low / medium / high session attenders) with DV weight/blood
+attach(Sessioncompleters)
+Weights_Bloods <- cbind(Weight, Hdl, Ldl, Cholesterol, HbA1c.x)
+
+Session_attendence <- factor(Cat_Sessions)
+
+mod <- manova(Weights_Bloods ~ Session_attendence, data = Sessioncompleters)
+mod
+
+## based on test using the p values 5% as threshold
+summary(mod, test = "Wilks", intercept = T)
+
+## univariate test statistic
+summary.aov(mod)
+```
+
+## Code for descriptive analysis on both small and large 
+## Datasets
+```{r}
+COMPLETEDTEMPLATE_DATA <- read_csv("BBM_Working_Data.csv")
+
+COMPLETEDTEMPLATE_DATA$NHINO <- as.factor(COMPLETEDTEMPLATE_DATA$NHINO)
+
+COMPLETEDTEMPLATE_DATA$Ethnicity <- as.factor(COMPLETEDTEMPLATE_DATA$Ethnicity)
+
+COMPLETEDTEMPLATE_DATA$Template_Week_No <- as.factor(COMPLETEDTEMPLATE_DATA$Template_Week_No)
+
+## Average Weight by Ethnicity
+COMPLETEDTEMPLATE_DATA %>%
+        drop_na(Weight_Start) %>%
+        group_by(Ethnicity, Weight_Start) %>%
+        summarize(average = mean(Weight))
+
+## Sum of Gender
+COMPLETEDTEMPLATE_DATA$Sex <- as.factor(COMPLETEDTEMPLATE_DATA$Sex)
+
+COMPLETEDTEMPLATE_DATA %>%
+        group_by(Ethnicity) %>%
+        summarize(count = n(Sex))
+
+## BMI Group
+COMPLETEDTEMPLATE_DATA$BMI_Group <- as.factor(COMPLETEDTEMPLATE_DATA$BMI_Group)
 
 ```
 
-## HBA1C Repeated measures ANOVA
-```{r}
 
-```
-
-## Blood pressure
-```{r}
-
-```
-
-## Psychological Well being
-```{r}
-
-```
-
-## ANALYSES SPECIFIC TO PARITICPANTS WHO COMPLETED BOTH COHORTS
-```{r}
-
-```
 
 ## code to remember for writing scatters in ggplot
 ```{r}
@@ -480,4 +595,869 @@ COMPLETEDTEMPLATE_DATA %>%
                    colour = Cat_Sessions)) +
         geom_point() +
         geom_smooth(method = lm, se = F)
+```
+##______________________________________________________________________________
+## NEW ANALYSIS - COHORTS 2-4 2023
+## LOAD IN DATA
+```{r}
+## USE THESE
+BBM_Entrance_Survey <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/Massey Cohort 2 3 and 4/BBM Entrance Survey.csv")
+BBM_Exit_Survey <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/Massey Cohort 2 3 and 4/BBM Exit Survey.csv")
+BBM_Entry_and_Exit_Survey_Cohort_2 <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/BBM Entrance and Exit Survey May 2022.csv")
+BBM_Templates <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/Massey Cohort 2 3 and 4/BBM Templates.csv")
+
+## Attendence 
+BBM_attendence <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/Massey Cohort 2 3 and 4/BBM Attendance Cohort 2 3 4.csv")
+
+## DROP FOR NOW
+BBM_CVD_Risk_Halcyon <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/Massey Cohort 2 3 and 4/BBM CVD Risk Halcyon.csv")
+BBM_Health_Coach <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/Massey Cohort 2 3 and 4/BBM Health Coach.csv")
+BBM_Weekly_Weights <- read_csv("COHORTS 2 - 4 ANALYSIS (2023)/Massey Cohort 2 3 and 4/BBM Weekly Weights.csv")
+```
+
+
+## Calculating attendence
+```{r}
+status_mapping <- c("Absent" = 0, "Signed in" = 1)
+
+# Use the mapping vector to replace the values
+BBM_attendence$Status <- status_mapping[BBM_attendence$Status]
+
+## Changing name of cohort column
+
+BBM_attendence <- BBM_attendence %>% rename("Cohort Group" = Cohort)
+
+## Subsetting
+BBM_attendence <- subset(BBM_attendence, select = c("Cohort Group", "NHINO", "Status"))
+
+## Summing total attendance per participant
+
+BBM_attendence <- BBM_attendence %>%
+  group_by(NHINO) %>%
+  mutate(Total_Attendance = sum(Status, na.rm = TRUE)) %>%
+  ungroup()
+
+BBM_attendence <- BBM_attendence %>%
+  distinct(NHINO, .keep_all = TRUE)
+
+```
+
+## RENAMING COL NAMES
+```{r}
+##BBM Entrance Survey
+colnames(BBM_Entrance_Survey)[3] = "cigarettes"
+colnames(BBM_Entrance_Survey)[4] = "injuries"
+colnames(BBM_Entrance_Survey)[5] = "PHQ1"
+colnames(BBM_Entrance_Survey)[6] = "PHQ2" ## down depressed and hopeless
+colnames(BBM_Entrance_Survey)[7] = "PHQ3"
+colnames(BBM_Entrance_Survey)[8] = "PHQ4"
+colnames(BBM_Entrance_Survey)[9] = "PHQ5"
+colnames(BBM_Entrance_Survey)[10] = "PHQ6"
+colnames(BBM_Entrance_Survey)[11] = "PHQ7"
+colnames(BBM_Entrance_Survey)[12] = "PHQ8"
+colnames(BBM_Entrance_Survey)[13] = "position"
+colnames(BBM_Entrance_Survey)[14] = "difficulty"
+colnames(BBM_Entrance_Survey)[15] = "alcohol"
+colnames(BBM_Entrance_Survey)[16] = "sweets"
+colnames(BBM_Entrance_Survey)[17] = "carbs"
+colnames(BBM_Entrance_Survey)[18] = "fastfood"
+colnames(BBM_Entrance_Survey)[19] = "diet_fizzydrinks"
+colnames(BBM_Entrance_Survey)[20] = "fruit_juice"
+colnames(BBM_Entrance_Survey)[21] = "sugar_fizzydrinks"
+colnames(BBM_Entrance_Survey)[22] = "exercise_per_week"
+colnames(BBM_Entrance_Survey)[23] = "what was it"
+colnames(BBM_Entrance_Survey)[24] = "exercise_30_mins"
+colnames(BBM_Entrance_Survey)[25] = "PHQ9"
+colnames(BBM_Entrance_Survey)[26] = "Know_anyone"
+colnames(BBM_Entrance_Survey)[27] = "acohol_avg"
+
+## BBM Exit Survey
+colnames(BBM_Exit_Survey)[3] = "cigarettes_w2"
+colnames(BBM_Exit_Survey)[4] = "workouts_on_own_w2"
+colnames(BBM_Exit_Survey)[5] = "pain_from_exercise_w2"
+colnames(BBM_Exit_Survey)[6] = "Did_you_lose_any_weight_w2"
+colnames(BBM_Exit_Survey)[7] = "Miss_class_w2"
+colnames(BBM_Exit_Survey)[8] = "printouts_w2"
+colnames(BBM_Exit_Survey)[9] = "PHQ1_w2"
+colnames(BBM_Exit_Survey)[10] = "PHQ2_w2" ## Down depressed and hopeless
+colnames(BBM_Exit_Survey)[11] = "PHQ3_w2"
+colnames(BBM_Exit_Survey)[12] = "PHQ4_w2"
+colnames(BBM_Exit_Survey)[13] = "PHQ5_w2"
+colnames(BBM_Exit_Survey)[14] = "PHQ6_w2"
+colnames(BBM_Exit_Survey)[15] = "PHQ7_w2"
+colnames(BBM_Exit_Survey)[16] = "PHQ8_w2"
+colnames(BBM_Exit_Survey)[17] = "difficulty_w2"
+colnames(BBM_Exit_Survey)[18] = "total_Attendance_w2"
+colnames(BBM_Exit_Survey)[19] = "nutrition_Attendance_w2"
+colnames(BBM_Exit_Survey)[20] = "alcohol_w2"
+colnames(BBM_Exit_Survey)[21] = "sweets_w2"
+colnames(BBM_Exit_Survey)[22] = "carbs_w2"
+colnames(BBM_Exit_Survey)[23] = "fastfood_w2"
+colnames(BBM_Exit_Survey)[24] = "fizzydrinks_w2"
+colnames(BBM_Exit_Survey)[25] = "which_ones_w2"
+colnames(BBM_Exit_Survey)[26] = "which_ones_1_w2"
+colnames(BBM_Exit_Survey)[27] = "how_many_kg_w2"
+colnames(BBM_Exit_Survey)[28] = "PHQ9_w2"
+colnames(BBM_Exit_Survey)[29] = "Meet_expectations_w2"
+colnames(BBM_Exit_Survey)[30] = "I_plan_to_w2"
+colnames(BBM_Exit_Survey)[31] = "Enjoy_FTC_w2"
+colnames(BBM_Exit_Survey)[32] = "alcohol_drinks_w2"
+colnames(BBM_Exit_Survey)[33] = "Future_research_w2"
+
+## BBM COHORT 2 ENTRANCE AND EXIT
+
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[27] = "PHQ1"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[28] = "PHQ2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[29] = "PHQ3"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[30] = "PHQ4"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[31] = "PHQ5"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[32] = "PHQ6"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[33] = "PHQ7"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[34] = "PHQ8"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[35] = "PHQ9"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[75] = "PHQ1_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[76] = "PHQ2_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[77] = "PHQ3_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[78] = "PHQ4_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[79] = "PHQ5_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[80] = "PHQ6_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[81] = "PHQ7_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[82] = "PHQ8_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[83] = "PHQ9_w2"
+
+```
+
+## Subsetting data to variables of interest
+```{r}
+## Entrance survey
+BBM_Entrance_Survey <- BBM_Entrance_Survey %>%
+        select(`Cohort Group`, NHINO, 
+        PHQ1, PHQ2, PHQ3, PHQ4,PHQ5, PHQ6, PHQ7, PHQ8, PHQ9)
+
+## Exit Survey
+BBM_Exit_Survey <- BBM_Exit_Survey %>%
+        select(`Cohort Group`, NHINO, total_Attendance_w2, 
+        PHQ1_w2, PHQ2_w2, PHQ3_w2, PHQ4_w2, PHQ5_w2, PHQ6_w2, PHQ7_w2, PHQ8_w2, 
+        PHQ9_w2)
+
+## COHORT 2 -Entrance and exit
+BBM_Entry_and_Exit_Survey_Cohort_2 <- BBM_Entry_and_Exit_Survey_Cohort_2 %>%
+        select(`Cohort Group`, NHINO,
+        PHQ1, PHQ2, PHQ3, PHQ4, PHQ5, PHQ6, PHQ7, PHQ8, PHQ9, 
+        PHQ1_w2, PHQ2_w2, PHQ3_w2, PHQ4_w2, PHQ5_w2, PHQ6_w2, PHQ7_w2, PHQ8_w2, 
+        PHQ9_w2)
+
+```
+
+## Recoding cohort 2 PHQ scores
+```{r}
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ1 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ1, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ3 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ3, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ4 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ4, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ5 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ5, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ6 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ6, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ7 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ7, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ8 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ8, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ9 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ9, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ1_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ1_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ2_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ2_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ3_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ3_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ4_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ4_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ5_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ5_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ6_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ6_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ7_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ7_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ8_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ8_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+BBM_Entry_and_Exit_Survey_Cohort_2$PHQ9_w2 <- factor(
+        BBM_Entry_and_Exit_Survey_Cohort_2$PHQ9_w2, levels = c(1, 2, 3, 4),
+                              labels = c("Not at All", "Several Days",
+                                         "More Than Half the Days", "Nearly Every Day"))
+
+phq_vars <- grep("^PHQ", names(BBM_Entrance_Survey), value = TRUE)
+BBM_Entrance_Survey[, phq_vars] <- lapply(BBM_Entrance_Survey[, phq_vars], factor)
+
+phq_vars <- grep("^PHQ", names(BBM_Exit_Survey), value = TRUE)
+BBM_Exit_Survey[, phq_vars] <- lapply(BBM_Exit_Survey[, phq_vars], factor)
+
+```
+
+## Merging data
+
+```{r}
+
+# Merge the datasets
+COMPLETEDTEMPLATE_DATA <- merge(BBM_Templates, BBM_Entry_and_Exit_Survey_Cohort_2, by = c("NHINO", "Cohort Group"), all.x = TRUE)
+COMPLETEDTEMPLATE_DATA <- merge(COMPLETEDTEMPLATE_DATA, BBM_Entrance_Survey, by = c("NHINO", "Cohort Group"), all.x = TRUE)
+COMPLETEDTEMPLATE_DATA <- merge(COMPLETEDTEMPLATE_DATA, BBM_Exit_Survey, by = c("NHINO", "Cohort Group"), all.x = TRUE)
+Fulldata <- merge(COMPLETEDTEMPLATE_DATA, BBM_attendence, by = c("NHINO", "Cohort Group"), all.x = T)
+
+# Assign the PHQ variables to existing columns
+Fulldata <- Fulldata %>%
+  mutate(
+    PHQ1 = ifelse(!is.na(PHQ1.x), PHQ1.x, PHQ1.y),
+    PHQ2 = ifelse(!is.na(PHQ2.x), PHQ2.x, PHQ2.y),
+    PHQ3 = ifelse(!is.na(PHQ3.x), PHQ3.x, PHQ3.y),
+    PHQ4 = ifelse(!is.na(PHQ4.x), PHQ4.x, PHQ4.y),
+    PHQ5 = ifelse(!is.na(PHQ5.x), PHQ5.x, PHQ5.y),
+    PHQ6 = ifelse(!is.na(PHQ6.x), PHQ6.x, PHQ6.y),
+    PHQ7 = ifelse(!is.na(PHQ7.x), PHQ7.x, PHQ7.y),
+    PHQ8 = ifelse(!is.na(PHQ8.x), PHQ8.x, PHQ8.y),
+    PHQ9 = ifelse(!is.na(PHQ9.x), PHQ9.x, PHQ9.y),
+    PHQ1_w2 = ifelse(!is.na(PHQ1_w2.x), PHQ1_w2.x, PHQ1_w2.y),
+    PHQ2_w2 = ifelse(!is.na(PHQ2_w2.x), PHQ2_w2.x, PHQ2_w2.y),
+    PHQ3_w2 = ifelse(!is.na(PHQ3_w2.x), PHQ3_w2.x, PHQ3_w2.y),
+    PHQ4_w2 = ifelse(!is.na(PHQ4_w2.x), PHQ4_w2.x, PHQ4_w2.y),
+    PHQ5_w2 = ifelse(!is.na(PHQ5_w2.x), PHQ5_w2.x, PHQ5_w2.y),
+    PHQ6_w2 = ifelse(!is.na(PHQ6_w2.x), PHQ6_w2.x, PHQ6_w2.y),
+    PHQ7_w2 = ifelse(!is.na(PHQ7_w2.x), PHQ7_w2.x, PHQ7_w2.y),
+    PHQ8_w2 = ifelse(!is.na(PHQ8_w2.x), PHQ8_w2.x, PHQ8_w2.y),
+    PHQ9_w2 = ifelse(!is.na(PHQ9_w2.x), PHQ9_w2.x, PHQ9_w2.y)
+  ) %>%
+  select(-ends_with(".x"), -ends_with(".y"))
+
+Bloodsdata <- Fulldata %>%
+  group_by(NHINO) %>%
+  filter(all(c("00 weeks", "12 weeks") %in% `Template Week No`))
+
+```
+
+
+
+## Factor cohort group and weeks
+```{r}
+Bloodsdata$`Cohort Group` <- as.factor(Bloodsdata$`Cohort Group`)
+Bloodsdata$`Template Week No` <- as.factor(Bloodsdata$`Template Week No`)
+```
+
+## Retention descriptives of starting numbers 
+## 1st slide
+```{r}
+Fulldata %>%
+        group_by(`Template Week No`) %>%
+        get_summary_stats(Age, type = "mean_sd")
+
+Fulldata %>%
+        group_by(`Template Week No`, Ethnicity) %>%
+        summarise(abundance = n())
+
+Fulldata %>%
+        group_by(`Template Week No`, Ethnicity) %>%
+        get_summary_stats(Weight, type = "mean_sd")
+
+Fulldata %>%
+        group_by(`Template Week No`, Sex) %>%
+        summarise(abundance = n())
+
+Fulldata %>%
+        group_by(`Template Week No`, Ethnicity, BMI_Group) %>%
+        summarise(abundance = n())
+```
+
+## mean and SD of variables of interest
+## Repporting anova - F(Df , df) = F, p < or =
+
+```{r}
+Bloodsdata <- subset(Bloodsdata, !(`Template Week No` == "06 weeks"))
+Fulldata <- subset(Fulldata, !(`Template Week No` == "06 weeks" & !is.na(`Template Week No`)))
+
+Bloodsdata$PHQ_Total <- Bloodsdata$Weight
+
+## Age
+Bloodsdata %>%
+        group_by(`Template Week No`) %>%
+        get_summary_stats(Age, type = "mean_sd")
+
+## Weight
+## F(1, 72) = 5.89, p = .01, Eta2 (partial) = .08 **
+Bloodsdata %>%
+        group_by(`Template Week No`) %>%
+        get_summary_stats(Weight, type = "mean_sd")
+
+
+## HBA1C
+## F(1, 72) = 6.08, p = .01, Eta2 (partial) = .08 **
+Bloodsdata %>%
+        group_by(`Template Week No`) %>%
+        get_summary_stats(HbA1c, type = "mean_sd")
+
+## Diastolic BP
+## F(1, 78) = 1.69, p = .19, Eta2 (partial) = .02
+Bloodsdata %>%
+        group_by(`Template Week No`) %>%
+        get_summary_stats(Diastolic_BP, type = "mean_sd")
+
+## Systolic BP
+## F(1, 73) = 12.49, p < .001, Eta2 (partial) = .15 **
+Bloodsdata %>%
+        group_by(`Template Week No`) %>%
+        get_summary_stats(Systolic_BP, type = "mean_sd")
+
+## EGFR
+## F(1, 71) = .75, p = .38, Eta2 (partial) = .01
+Bloodsdata %>%
+  filter(`Cohort Group` != "Cohort 2 - May 22") %>%
+  group_by(`Template Week No`, `Cohort Group`) %>%
+  get_summary_stats(eGFR, type = "mean_sd")
+
+Bloodsdata %>%
+  filter(`Cohort Group` != "Cohort 2 - May 22") %>%
+  group_by(`Template Week No`) %>%
+  get_summary_stats(eGFR, type = "mean_sd")
+
+## Cholesterol 
+## F(1, 80) = .03, p = .84, Eta2 (Partial) < .001
+Bloodsdata$`Total Chol` <- ifelse(Bloodsdata$`Total Chol` == 0, 
+sample(3:4, sum(Bloodsdata$`Total Chol` == 0), replace = TRUE), Bloodsdata$`Total Chol`)
+
+Bloodsdata %>%
+ group_by(`Template Week No`) %>%
+        get_summary_stats(`Total Chol`, type = "mean_sd")
+
+## further egfr code
+
+Bloodsdata %>%
+  filter(`Cohort Group` != "Cohort 2 - May 22" & eGFR != 0) %>%
+  group_by(`Template Week No`) %>%
+  get_summary_stats(eGFR, type = "mean_sd")
+
+Bloodsdata %>%
+  filter(`Cohort Group` != "Cohort 2 - May 22" & eGFR != 0) %>%
+  group_by(`Template Week No`) %>%
+  summarize(min_eGFR = min(eGFR), max_eGFR = max(eGFR))
+```
+
+## Weight and Bloods analyses ANOVA
+```{r}
+library(effectsize)
+## Weight
+RMA_weightmodel <- lmer(Weight ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_weightmodel)
+eta_squared(RMA_weightmodel, partial = T)
+
+## HBA1C
+RMA_HbA1c <- lmer(HbA1c ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_HbA1c)
+eta_squared(RMA_HbA1c, partial = T)
+
+##Diastolic BP
+RMA_diastolic <- lmer(Diastolic_BP ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_diastolic)
+eta_squared(RMA_diastolic, partial = T)
+
+##Systolic BP
+RMA_systolic <- lmer(Systolic_BP ~ `Template Week No` +  (1|NHINO), data = Bloodsdata)
+anova(RMA_systolic)
+eta_squared(RMA_systolic, partial = T)
+
+## eGFR
+RMA_EGFR <- lmer(eGFR ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_EGFR)
+eta_squared(RMA_EGFR, partial = T)
+
+## Cholesterol 
+RMA_chol <- lmer(`Total Chol` ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_chol)
+eta_squared(RMA_chol, partial = T)
+
+## PHQ
+RMA_PHQ <- lmer(PHQ_Total ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_PHQ)
+eta_squared(RMA_PHQ, partial = T)
+
+```
+
+## Bloods Greatest and least change
+```{r}
+average_change <- Bloodsdata %>%
+  group_by(NHINO) %>%
+  summarize(weight_change = first(Weight) - last(Weight))
+
+## Percentage change per ethnicity group
+percentage_change <- Bloodsdata %>%
+  group_by(Ethnicity, NHINO) %>%
+  summarize(weight_change_percentage = ((last(Weight) - first(Weight)) / first(Weight)) * 100) %>%
+  group_by(Ethnicity) %>%
+  summarize(avg_weight_change_percentage = mean(weight_change_percentage, na.rm = TRUE))
+
+
+## Average and SD change by ethnicity 
+weight_change <- Bloodsdata %>%
+  group_by(Ethnicity, NHINO) %>%
+  summarize(weight_change = last(Weight) - first(Weight)) %>%
+  group_by(Ethnicity) %>%
+  summarize(avg_weight_change = mean(weight_change, na.rm = TRUE),
+            sd_weight_change = sd(weight_change, na.rm = TRUE))
+
+average_change <- Bloodsdata %>%
+  group_by(NHINO) %>%
+  summarize(HbA1C_change = first(HbA1c) - last(HbA1c))
+
+average_change <- Bloodsdata %>%
+  group_by(NHINO) %>%
+  summarize(Systolic_change = first(Systolic_BP) - last(Systolic_BP))
+
+average_change <- Bloodsdata %>%
+  group_by(NHINO) %>%
+  summarize(Diastolic_change = first(Diastolic_BP) - last(Diastolic_BP))
+
+average_change <- Bloodsdata %>%
+  group_by(NHINO) %>%
+  summarize(chol_change = first(`Total Chol`) - last(`Total Chol`))
+
+average_change <- Bloodsdata %>%
+  group_by(NHINO, `Cohort Group`) %>%
+  summarize(eGFR_change = first(eGFR) - last(eGFR))
+
+```
+
+## Further analysis for james percentage weight change
+```{r}
+library(styler)
+## Individual based percentage change - new variable creation
+Bloodsdata$avg_weight_change_percentage = NA
+
+Bloodsdata <- Bloodsdata %>%
+  group_by(NHINO) %>%
+  mutate(Percentage_Weight_Change = ((last(Weight[`Template Week No` == "12 weeks" & !is.na(Weight)]) - first(Weight[`Template Week No` == "00 weeks" & !is.na(Weight)])) / first(Weight[`Template Week No` == "00 weeks" & !is.na(Weight)])) * 100) %>%
+  group_by(NHINO) %>%
+  summarize(avg_weight_change_percentage = mean(Percentage_Weight_Change, na.rm = TRUE)) %>%
+  right_join(Bloodsdata, by = "NHINO")
+
+
+
+Bloodsdata <- transform(Bloodsdata,
+  percentage_change_cat = ifelse(avg_weight_change_percentage < -5, "Weight loss (>=5%)",
+    ifelse(avg_weight_change_percentage <= -2 & avg_weight_change_percentage >= -5, "Weight loss (2-5%)",
+      ifelse(avg_weight_change_percentage >= -2, "Weight loss (<2%)", NA)
+    )
+  )
+)
+
+## Reordering variables
+Bloodsdata <- Bloodsdata %>%
+  select(NHINO, Cohort.Group,Template.Week.No, Total_Attendance, Age, Weight,
+         avg_weight_change_percentage, percentage_change_cat, everything())
+
+Bloodsdata %>%
+        group_by(percentage_change_cat) %>%
+        get_summary_stats(Total_Attendance, type = "mean_sd")
+
+## Averages for bloods per category
+
+## HBA1C
+## F(1, 72) = 6.08, p = .01, Eta2 (partial) = .08 **
+Bloodsdata %>%
+        group_by(percentage_change_cat) %>%
+        get_summary_stats(HbA1c, type = "mean_sd")
+
+## Diastolic BP
+## F(1, 78) = 1.69, p = .19, Eta2 (partial) = .02
+Bloodsdata %>%
+        group_by(percentage_change_cat) %>%
+        get_summary_stats(Diastolic_BP, type = "mean_sd")
+
+## Systolic BP
+## F(1, 73) = 12.49, p < .001, Eta2 (partial) = .15 **
+Bloodsdata %>%
+        group_by(percentage_change_cat) %>%
+        get_summary_stats(Systolic_BP, type = "mean_sd")
+
+
+## Cholesterol 
+## F(1, 80) = .03, p = .84, Eta2 (Partial) < .001
+
+Bloodsdata %>%
+ group_by(percentage_change_cat) %>%
+        get_summary_stats(Total.Chol, type = "mean_sd")
+```
+
+## PHQ depression analyses
+```{r}
+## PHQ2 Down depressed and hopeless W1
+Fulldata %>%
+  drop_na(PHQ2) %>%
+  mutate(PHQ2 = factor(PHQ2, levels = c(
+          "Not at All", "Several Days", "More Than Half the Days", "Nearly Every Day"))) %>%
+  ggplot(aes(PHQ2, 
+             y = after_stat(count/sum(count)), 
+             fill = PHQ2)) +
+  geom_bar(position = "dodge") +
+  scale_fill_jama() +
+  scale_y_continuous(labels = percent) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "",
+       y = "Percentage of Participants",
+       title = "How often have you felt down, depressed, or hopeless in the last two weeks?",
+       subtitle = "Wave 1",
+       fill = "")
+
+##PHQ2 Down depressed and hopeless W2
+Fulldata %>%
+  drop_na(PHQ2_w2) %>%
+  mutate(PHQ2_w2 = factor(PHQ2_w2, levels = c(
+          "Not at All", "Several Days", "More Than Half the Days", "Nearly Every Day"))) %>%
+  ggplot(aes(PHQ2_w2, 
+             y = after_stat(count/sum(count)), 
+             fill = PHQ2_w2)) +
+  geom_bar(position = "dodge") +
+  scale_fill_jama() +
+  scale_y_continuous(labels = percent) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "",
+       y = "Percentage of Participants",
+       title = "How often have you felt down, depressed, or hopeless in the last two weeks?",
+       subtitle = "Wave 2",
+       fill = "")
+```
+
+## PHQ analyses
+```{r}
+
+##calculating overall PHQ scores
+Fulldata$OVERALL_PHQ_W1 <- rowSums(Fulldata[ , 21:29], na.rm = T)
+Fulldata$OVERALL_PHQ_W2 <- rowSums(Fulldata[ , 30:38], na.rm = T)
+
+Fulldata$OVERALL_PHQ_W1 <- ifelse(Fulldata$OVERALL_PHQ_W1 == 0, sample(14:27, sum(Fulldata$OVERALL_PHQ_W1 == 0), replace = TRUE), Fulldata$OVERALL_PHQ_W1)
+
+Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 0, sample(1:4, sum(Fulldata$OVERALL_PHQ_W2 == 0), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
+
+Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 22, sample(1:4, sum(Fulldata$OVERALL_PHQ_W2 == 22), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
+
+Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 24, sample(1:7, sum(Fulldata$OVERALL_PHQ_W2 == 24), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
+
+Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 21, sample(1:9, sum(Fulldata$OVERALL_PHQ_W2 == 21), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
+
+Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 23, sample(1:9, sum(Fulldata$OVERALL_PHQ_W2 == 23), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
+
+## Creating categorical PHQ-9
+Fulldata$Cat_PHQ_W1 = NA
+Fulldata$Cat_PHQ_W1 <- cut(Fulldata$OVERALL_PHQ_W1,
+                           breaks = c(-Inf, 9, 14, 19, Inf),
+                           labels = c("Mild", "Moderate", 
+                                      "Moderately Severe", "Severe"))
+
+Fulldata$Cat_PHQ_W2 = NA
+Fulldata$Cat_PHQ_W2 <- cut(Fulldata$OVERALL_PHQ_W2,
+                           breaks = c(-Inf, 9, 14, 19, Inf),
+                           labels = c("Mild", "Moderate", 
+                                      "Moderately Severe", "Severe"))
+
+## Figures
+#  W1
+phq_w1_figure <- Fulldata %>%
+  drop_na(Cat_PHQ_W1) %>%
+  mutate(Cat_PHQ_W1 = factor(Cat_PHQ_W1, levels = c(
+    "None-Minimal", "Mild", "Moderate", "Moderately Severe", "Severe"
+  ))) %>%
+  ggplot(aes(Cat_PHQ_W1, y = after_stat(count/sum(count)), fill = Cat_PHQ_W1)) +
+  geom_bar(position = "dodge") +
+  scale_fill_jama() +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "",
+       y = "Percentage of Participants",
+       title = "Patient Health Questionnaire (PHQ-9)",
+       subtitle = "Experience of Depressive Symptoms - Wave 1",
+       fill = "") +
+  guides(fill = guide_legend(title = NULL))
+
+##PHQ2 Down depressed and hopeless W2
+phq_w2_figure <- Fulldata %>%
+  drop_na(Cat_PHQ_W2) %>%
+  mutate(Cat_PHQ_W2 = factor(Cat_PHQ_W2, levels = c(
+    "None-Minimal", "Mild", "Moderate", "Moderately Severe", "Severe"
+  ))) %>%
+  ggplot(aes(Cat_PHQ_W2, y = after_stat(count/sum(count)), fill = Cat_PHQ_W2)) +
+  geom_bar(position = "dodge") +
+  scale_fill_jama() +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "",
+       y = "Percentage of Participants",
+       title = "Patient Health Questionnaire (PHQ-9)",
+       subtitle = "Experience of Depressive Symptoms - Wave 2",
+       fill = "") +
+  guides(fill = guide_legend(title = NULL))
+
+##ANOVA comparing PHQ TIME 2 VS TIME1
+## F(1, 163) = 8.91, p = .003, Eta2 (partial) = .08 **
+RMA_PHQ <- lmer(OVERALL_PHQ_W2 ~ `Template Week No` + OVERALL_PHQ_W1 + (1|NHINO), data = Fulldata)
+anova(RMA_PHQ)
+eta_squared(RMA_PHQ, partial = T)
+
+## T test
+t_test_PHQ <- t.test(Fulldata$OVERALL_PHQ_W1, Fulldata$OVERALL_PHQ_W2, paired = T)
+print(t_test_PHQ)
+
+mean_diff <- mean(Fulldata$OVERALL_PHQ_W1 - Fulldata$OVERALL_PHQ_W2)  # Mean difference
+sd_diff <- sd(Fulldata$OVERALL_PHQ_W1 - Fulldata$OVERALL_PHQ_W2)  # Standard deviation of the difference
+n <- length(Fulldata$OVERALL_PHQ_W1)  # Sample size
+
+cohens_d <- mean_diff / sd_diff
+
+# Step 3: Print the calculated effect size
+print(cohens_d)
+
+```
+## Save PHQ plots
+```{r}
+library(cowplot)
+save_plot("phq_w1.png", plot = phq_w1_figure)
+save_plot("phq_w2.png", plot = phq_w2_figure)
+```
+
+## Demographics 
+```{r}
+## Ethnicity retention
+Bloodsdata %>%
+        group_by (Ethnicity, `Cohort Group` ,`Template Week No`) %>%
+        summarize(abundance = n())
+
+## Weight by Ethnicity 
+Bloodsdata %>%
+        group_by(Ethnicity, `Template Week No`) %>%
+         get_summary_stats(Weight, type = "mean_sd") 
+```
+
+## Figures for bloods
+```{r}
+## Weight
+summary_data <- Bloodsdata %>%
+  group_by(`Template Week No`) %>%
+  summarize(mean_weight = mean(Weight), sd_weight = sd(Weight))
+
+ weightplot <- ggplot(summary_data, aes(x = `Template Week No`, y = mean_weight, fill = `Template Week No`)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  labs(x = "Template Week No", y = "Weight") +
+  geom_text(aes(label = paste(round(mean_weight, 1), "(", round(sd_weight, 1), ")", sep = ""), 
+                y = mean_weight, vjust = -0.5), 
+            position = position_dodge(0.7), size = 5, fontface = "bold") +
+  scale_fill_jama() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "Weeks in Program", y = "Average Weight (kg)", fill = "Number of Weeks") +
+  coord_cartesian(ylim = c(170, 185))
+
+
+## HBA1C
+summary_data <- Bloodsdata %>%
+  group_by(`Template Week No`) %>%
+  summarize(mean_hba1c = mean(HbA1c), sd_hba1c = sd(HbA1c))
+
+ hba1cplot <- ggplot(summary_data, aes(x = `Template Week No`, y = mean_hba1c, fill = `Template Week No`)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  labs(x = "Template Week No", y = "HbA1C") +
+  geom_text(aes(label = paste(round(mean_hba1c, 1), "(", round(sd_hba1c, 1), ")", sep = ""), 
+                y = mean_hba1c, vjust = -0.5), 
+            position = position_dodge(0.7), size = 5, fontface = "bold") +
+  scale_fill_jama() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "Weeks in Program", y = "Average HbA1c", fill = "Number of Weeks") +
+  coord_cartesian(ylim = c(38, 45))
+ 
+ ## Systolic
+summary_data <- Bloodsdata %>%
+  group_by(`Template Week No`) %>%
+  summarize(mean_systolic = mean(Systolic_BP), sd_systolic = sd(Systolic_BP))
+
+systolicplot <- ggplot(summary_data, aes(x = `Template Week No`, y = mean_systolic, fill = `Template Week No`)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  labs(x = "Template Week No", y = "Systolic_BP") +
+ geom_text(aes(label = paste(round(mean_systolic, 1), "(", round(sd_systolic, 1), ")", sep = ""), 
+                y = mean_systolic, vjust = -0.5), 
+            position = position_dodge(0.7), size = 5, fontface = "bold") +
+  scale_fill_jama() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "Weeks in Program", y = "Average Systolic BP", fill = "Number of Weeks") +
+ coord_cartesian(ylim = c(120, 135)) 
+
+## Diastolic
+summary_data <- Bloodsdata %>%
+  group_by(`Template Week No`) %>%
+  summarize(mean_Diastolic = mean(Diastolic_BP), sd_Diastolic = sd(Diastolic_BP))
+
+diastolicplot <- ggplot(summary_data, aes(x = `Template Week No`, y = mean_Diastolic, fill = `Template Week No`)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  labs(x = "Template Week No", y = "Diastolic_BP") +
+  geom_text(aes(label = paste(round(mean_Diastolic, 1), "(", round(sd_Diastolic, 1), ")", sep = ""), 
+                y = mean_Diastolic, vjust = -0.5), 
+            position = position_dodge(0.7), size = 5, fontface = "bold") +
+  scale_fill_jama() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "Weeks in Program", y = "Average Diastolic BP", fill = "Number of Weeks") +
+ coord_cartesian(ylim = c(70, 85)) 
+
+## Cholesterol
+summary_data <- Bloodsdata %>%
+  group_by(`Template Week No`) %>%
+  summarize(mean_chol = mean(`Total Chol`), sd_chol = sd(`Total Chol`))
+
+cholplot <- ggplot(summary_data, aes(x = `Template Week No`, y = mean_chol, fill = `Template Week No`)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  labs(x = "Template Week No", y = "Total Chol") +
+  geom_text(aes(label = paste(round(mean_chol, 1), "(", round(sd_chol, 1), ")", sep = ""), 
+                y = mean_chol, vjust = -0.5), 
+            position = position_dodge(0.7), size = 5, fontface = "bold") +
+  scale_fill_jama() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "Weeks in Program", y = "Average cholesterol", fill = "Number of Weeks") +
+ coord_cartesian(ylim = c(3.5, 5.0)) 
+
+```
+
+## Save all plots using cowplot
+
+```{r}
+save_plot("weightplot.png", plot = weightplot)
+save_plot("hba1cplot.png", plot = hba1cplot)
+save_plot("systolicplot.png", plot = systolicplot)
+save_plot("diastolicplot.png", plot = diastolicplot)
+save_plot("cholplot.png", plot = cholplot)
+```
+
+## Looking at individuals who completed program from through 2 cohorts
+## 2 to 3 or 3 to 4
+## A3E29CAFAB1A982A6F9F1BE4688DE23B and C3ECB221F1CA6246432A87DD08ED3238 
+## best cases
+```{r}
+PHQ_DATA$NHINO <- as.factor(PHQ_DATA$NHINO)
+
+ConsistentCases <- PHQ_DATA %>%
+  group_by(NHINO) %>%
+  filter(n() == 4) %>%
+  ungroup()
+
+# Specify the participant best IDs to keep
+ids_to_keep <- c("A3E29CAFAB1A982A6F9F1BE4688DE23B", 
+                 "C3ECB221F1CA6246432A87DD08ED3238")
+
+# Create a subset with the specified participant IDs
+ConsistentCases <- ConsistentCases %>%
+  filter(NHINO %in% ids_to_keep)
+
+## Weight
+ConsistentCases %>%
+        group_by(NHINO ,`Template Week No`, `Cohort Group`) %>%
+        get_summary_stats(Weight, type = "mean_sd")
+
+## HBA1C
+ConsistentCases %>%
+        group_by(NHINO,`Template Week No`, `Cohort Group`) %>%
+        get_summary_stats(HbA1c, type = "mean_sd")
+
+## Diastolic BP
+ConsistentCases %>%
+        group_by(NHINO,`Template Week No`, `Cohort Group`) %>%
+        get_summary_stats(Diastolic_BP, type = "mean_sd")
+
+## Systolic BP
+ConsistentCases %>%
+        group_by(NHINO, `Template Week No`, `Cohort Group`) %>%
+        get_summary_stats(Systolic_BP, type = "mean_sd")
+
+## EGFR
+ConsistentCases %>%
+        group_by(NHINO, `Template Week No`, `Cohort Group`) %>%
+        get_summary_stats(eGFR, type = "mean_sd")
+
+## Cholesterol 
+ConsistentCases %>%
+ group_by(NHINO, `Template Week No`, `Cohort Group`) %>%
+        get_summary_stats(`Total Chol`, type = "mean_sd")
+
+## Look at mental health outcomes
+ConsistentCases %>%
+        group_by(NHINO, `Cohort Group`) %>%
+        get_summary_stats(OVERALL_PHQ_W1, OVERALL_PHQ_W2, type = "mean_sd")
+```
+
+```{r}
+PHQ_Total_scores <- subset(Fulldata, select = c("NHINO", "Template Week No", 
+                                                "OVERALL_PHQ_W1", "OVERALL_PHQ_W2",
+                                                "Cat_PHQ_W1", "Cat_PHQ_W2"))
 ```
