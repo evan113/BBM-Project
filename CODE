@@ -661,15 +661,14 @@ colnames(BBM_Entrance_Survey)[15] = "alcohol"
 colnames(BBM_Entrance_Survey)[16] = "sweets"
 colnames(BBM_Entrance_Survey)[17] = "carbs"
 colnames(BBM_Entrance_Survey)[18] = "fastfood"
-colnames(BBM_Entrance_Survey)[19] = "diet_fizzydrinks"
 colnames(BBM_Entrance_Survey)[20] = "fruit_juice"
-colnames(BBM_Entrance_Survey)[21] = "sugar_fizzydrinks"
-colnames(BBM_Entrance_Survey)[22] = "exercise_per_week"
+colnames(BBM_Entrance_Survey)[21] = "fizzydrinks"
+colnames(BBM_Entrance_Survey)[22] = "workouts_on_own"
 colnames(BBM_Entrance_Survey)[23] = "what was it"
 colnames(BBM_Entrance_Survey)[24] = "exercise_30_mins"
 colnames(BBM_Entrance_Survey)[25] = "PHQ9"
 colnames(BBM_Entrance_Survey)[26] = "Know_anyone"
-colnames(BBM_Entrance_Survey)[27] = "acohol_avg"
+colnames(BBM_Entrance_Survey)[27] = "alcohol_avg"
 
 ## BBM Exit Survey
 colnames(BBM_Exit_Survey)[3] = "cigarettes_w2"
@@ -706,6 +705,12 @@ colnames(BBM_Exit_Survey)[33] = "Future_research_w2"
 
 ## BBM COHORT 2 ENTRANCE AND EXIT
 
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[8] = "fizzydrinks"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[10] = "fastfood"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[12] = "carbs"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[14] = "sweets"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[22] = "cigarettes"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[23] = "alcohol"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[27] = "PHQ1"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[28] = "PHQ2"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[29] = "PHQ3"
@@ -715,6 +720,13 @@ colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[32] = "PHQ6"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[33] = "PHQ7"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[34] = "PHQ8"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[35] = "PHQ9"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[51] = "workouts_on_own_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[60] = "fizzydrinks_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[62] = "fastfood_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[64] = "carbs_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[66] = "sweets_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[70] = "cigarettes_w2"
+colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[71] = "alcohol_w2"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[75] = "PHQ1_w2"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[76] = "PHQ2_w2"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[77] = "PHQ3_w2"
@@ -724,7 +736,6 @@ colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[80] = "PHQ6_w2"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[81] = "PHQ7_w2"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[82] = "PHQ8_w2"
 colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[83] = "PHQ9_w2"
-
 ```
 
 ## Subsetting data to variables of interest
@@ -732,20 +743,23 @@ colnames(BBM_Entry_and_Exit_Survey_Cohort_2)[83] = "PHQ9_w2"
 ## Entrance survey
 BBM_Entrance_Survey <- BBM_Entrance_Survey %>%
         select(`Cohort Group`, NHINO, 
-        PHQ1, PHQ2, PHQ3, PHQ4,PHQ5, PHQ6, PHQ7, PHQ8, PHQ9)
+        PHQ1, PHQ2, PHQ3, PHQ4,PHQ5, PHQ6, PHQ7, PHQ8, PHQ9, cigarettes, alcohol,
+        sweets, carbs, fastfood, fizzydrinks, workouts_on_own)
 
 ## Exit Survey
 BBM_Exit_Survey <- BBM_Exit_Survey %>%
         select(`Cohort Group`, NHINO, total_Attendance_w2, 
         PHQ1_w2, PHQ2_w2, PHQ3_w2, PHQ4_w2, PHQ5_w2, PHQ6_w2, PHQ7_w2, PHQ8_w2, 
-        PHQ9_w2)
+        PHQ9_w2, cigarettes_w2, alcohol_w2, sweets_w2, carbs_w2, 
+        fastfood_w2, fizzydrinks_w2, workouts_on_own_w2)
 
 ## COHORT 2 -Entrance and exit
 BBM_Entry_and_Exit_Survey_Cohort_2 <- BBM_Entry_and_Exit_Survey_Cohort_2 %>%
         select(`Cohort Group`, NHINO,
-        PHQ1, PHQ2, PHQ3, PHQ4, PHQ5, PHQ6, PHQ7, PHQ8, PHQ9, 
-        PHQ1_w2, PHQ2_w2, PHQ3_w2, PHQ4_w2, PHQ5_w2, PHQ6_w2, PHQ7_w2, PHQ8_w2, 
-        PHQ9_w2)
+        PHQ1, PHQ2, PHQ3, PHQ4, PHQ5, PHQ6, PHQ7, PHQ8, PHQ9, cigarettes, alcohol,
+        sweets, carbs, fastfood, fizzydrinks, PHQ1_w2, PHQ2_w2, PHQ3_w2, PHQ4_w2, 
+        PHQ5_w2, PHQ6_w2, PHQ7_w2, PHQ8_w2, PHQ9_w2, cigarettes_w2, alcohol_w2,
+        sweets_w2, carbs_w2, fastfood_w2, fizzydrinks_w2, workouts_on_own_w2)
 
 ```
 
@@ -852,7 +866,6 @@ BBM_Exit_Survey[, phq_vars] <- lapply(BBM_Exit_Survey[, phq_vars], factor)
 ## Merging data
 
 ```{r}
-
 # Merge the datasets
 COMPLETEDTEMPLATE_DATA <- merge(BBM_Templates, BBM_Entry_and_Exit_Survey_Cohort_2, by = c("NHINO", "Cohort Group"), all.x = TRUE)
 COMPLETEDTEMPLATE_DATA <- merge(COMPLETEDTEMPLATE_DATA, BBM_Entrance_Survey, by = c("NHINO", "Cohort Group"), all.x = TRUE)
@@ -871,6 +884,12 @@ Fulldata <- Fulldata %>%
     PHQ7 = ifelse(!is.na(PHQ7.x), PHQ7.x, PHQ7.y),
     PHQ8 = ifelse(!is.na(PHQ8.x), PHQ8.x, PHQ8.y),
     PHQ9 = ifelse(!is.na(PHQ9.x), PHQ9.x, PHQ9.y),
+    cigarettes = ifelse(!is.na(cigarettes.x), cigarettes.x, cigarettes.y),
+    alcohol = ifelse(!is.na(alcohol.x), alcohol.x, alcohol.y),
+    sweets = ifelse(!is.na(sweets.x), sweets.x, sweets.y),
+    carbs = ifelse(!is.na(carbs.x), carbs.x, carbs.y),
+    fastfood = ifelse(!is.na(fastfood.x), fastfood.x, fastfood.y),
+    fizzydrinks = ifelse(!is.na(fizzydrinks.x), fizzydrinks.x, fizzydrinks.y),
     PHQ1_w2 = ifelse(!is.na(PHQ1_w2.x), PHQ1_w2.x, PHQ1_w2.y),
     PHQ2_w2 = ifelse(!is.na(PHQ2_w2.x), PHQ2_w2.x, PHQ2_w2.y),
     PHQ3_w2 = ifelse(!is.na(PHQ3_w2.x), PHQ3_w2.x, PHQ3_w2.y),
@@ -879,7 +898,14 @@ Fulldata <- Fulldata %>%
     PHQ6_w2 = ifelse(!is.na(PHQ6_w2.x), PHQ6_w2.x, PHQ6_w2.y),
     PHQ7_w2 = ifelse(!is.na(PHQ7_w2.x), PHQ7_w2.x, PHQ7_w2.y),
     PHQ8_w2 = ifelse(!is.na(PHQ8_w2.x), PHQ8_w2.x, PHQ8_w2.y),
-    PHQ9_w2 = ifelse(!is.na(PHQ9_w2.x), PHQ9_w2.x, PHQ9_w2.y)
+    PHQ9_w2 = ifelse(!is.na(PHQ9_w2.x), PHQ9_w2.x, PHQ9_w2.y),
+    cigarettes_w2 = ifelse(!is.na(cigarettes_w2.x), cigarettes_w2.x, cigarettes_w2.y),
+    alcohol_w2 = ifelse(!is.na(alcohol_w2.x), alcohol_w2.x, alcohol_w2.y),
+    sweets_w2 = ifelse(!is.na(sweets_w2.x), sweets_w2.x, sweets_w2.y),
+    carbs_w2 = ifelse(!is.na(carbs_w2.x), carbs_w2.x, carbs_w2.y),
+    fastfood_w2 = ifelse(!is.na(fastfood_w2.x), fastfood_w2.x, fastfood_w2.y),
+    fizzydrinks_w2 = ifelse(!is.na(fizzydrinks_w2.x), fizzydrinks_w2.x, fizzydrinks_w2.y),
+    workouts_on_own_w2 = ifelse(!is.na(workouts_on_own_w2.x), workouts_on_own_w2.x, workouts_on_own_w2.y),
   ) %>%
   select(-ends_with(".x"), -ends_with(".y"))
 
@@ -889,12 +915,36 @@ Bloodsdata <- Fulldata %>%
 
 ```
 
-
-
 ## Factor cohort group and weeks
 ```{r}
 Bloodsdata$`Cohort Group` <- as.factor(Bloodsdata$`Cohort Group`)
 Bloodsdata$`Template Week No` <- as.factor(Bloodsdata$`Template Week No`)
+```
+
+## Recoding life change variables from entrance/exit survey
+```{r}
+Bloodsdata$workouts_on_own <- gsub("I never workout or exercise", "0", 
+                                   Bloodsdata$workouts_on_own, fixed = T)
+Bloodsdata$workouts_on_own <- gsub("I never work out or exercise", "0", 
+                                   Bloodsdata$workouts_on_own, fixed = T)
+Bloodsdata$workouts_on_own <- gsub("Every day of the week", "1", 
+                                   Bloodsdata$workouts_on_own, fixed = T)
+Bloodsdata$workouts_on_own <- gsub("Once per week", "1", 
+                                   Bloodsdata$workouts_on_own, fixed = T)
+Bloodsdata$workouts_on_own <- gsub("Less than once per week", "0", 
+                                   Bloodsdata$workouts_on_own, fixed = T)
+Bloodsdata$workouts_on_own <- gsub("Several times per week", "1", 
+                                   Bloodsdata$workouts_on_own, fixed = T)
+Bloodsdata$fastfood <- gsub("4-6 times", "5", Bloodsdata$fastfood, fixed = T)
+Bloodsdata$fastfood <- gsub("1-3 times", "2", Bloodsdata$fastfood, fixed = T)
+Bloodsdata$fastfood <- gsub("7-9 times", "8", Bloodsdata$fastfood, fixed = T)
+Bloodsdata$fastfood <- gsub("Never", "0", Bloodsdata$fastfood, fixed = T)
+Bloodsdata$fastfood_w2 <- gsub("1-3 times", "2", Bloodsdata$fastfood_w2, fixed = T)
+Bloodsdata$fastfood_w2 <- gsub("Never", "0", Bloodsdata$fastfood_w2, fixed = T)
+
+Bloodsdata$workouts_on_own_w2 <- gsub("Yes", "1", Bloodsdata$workouts_on_own_w2, fixed = T)
+Bloodsdata$workouts_on_own_w2 <- gsub("No", "0", Bloodsdata$workouts_on_own_w2, fixed = T)
+Bloodsdata$workouts_on_own_w2 <- gsub("2", "1", Bloodsdata$workouts_on_own_w2, fixed = T)
 ```
 
 ## Retention descriptives of starting numbers 
@@ -927,8 +977,6 @@ Fulldata %>%
 ```{r}
 Bloodsdata <- subset(Bloodsdata, !(`Template Week No` == "06 weeks"))
 Fulldata <- subset(Fulldata, !(`Template Week No` == "06 weeks" & !is.na(`Template Week No`)))
-
-Bloodsdata$PHQ_Total <- Bloodsdata$Weight
 
 ## Age
 Bloodsdata %>%
@@ -968,6 +1016,16 @@ Bloodsdata %>%
   get_summary_stats(eGFR, type = "mean_sd")
 
 Bloodsdata %>%
+  filter(`Cohort Group` != "Cohort 2 - May 22" & eGFR != 0) %>%
+  group_by(`Template Week No`) %>%
+  get_summary_stats(eGFR, type = "mean_sd")
+
+Bloodsdata %>%
+  filter(`Cohort Group` != "Cohort 2 - May 22" & eGFR != 0) %>%
+  group_by(`Template Week No`) %>%
+  summarize(min_eGFR = min(eGFR), max_eGFR = max(eGFR))
+
+Bloodsdata %>%
   filter(`Cohort Group` != "Cohort 2 - May 22") %>%
   group_by(`Template Week No`) %>%
   get_summary_stats(eGFR, type = "mean_sd")
@@ -981,17 +1039,188 @@ Bloodsdata %>%
  group_by(`Template Week No`) %>%
         get_summary_stats(`Total Chol`, type = "mean_sd")
 
-## further egfr code
+## Soda
+Bloodsdata %>%
+        get_summary_stats(fizzydrinks, type = "mean_sd")
+
+
+```
+
+## Cronbachs alpha of PHQ-9
+```{r}
+library(ltm)
+cronbachalphaPHQ <- subset(Bloodsdata,
+                           select = c(PHQ1, PHQ2, PHQ3, PHQ4, PHQ5, PHQ6, PHQ7, PHQ8, PHQ9))
+cronbach.alpha(cronbachalphaPHQ, na.rm = T)
+
+cronbachalphaPHQ_w2 <- subset(Bloodsdata,
+      select = c(PHQ1_w2, PHQ2_w2, PHQ3_w2, PHQ4_w2, PHQ5_w2, PHQ6_w2, PHQ7_w2, PHQ8_w2, PHQ9_w2))
+cronbach.alpha(cronbachalphaPHQ_w2, na.rm = T)
+```
+
+## merge diet and exercise on own variables into single column for ANOVA
+```{r}
+## cigarettes
+Bloodsdata <- Bloodsdata %>%
+  mutate(cigarettes = case_when(
+    `Template Week No` == "00 weeks" ~ cigarettes,
+    `Template Week No` == "12 weeks" ~ lag(cigarettes_w2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+Bloodsdata <- select(Bloodsdata, -cigarettes_w2)
+
+## alcohol
+Bloodsdata <- Bloodsdata %>%
+  mutate(alcohol = case_when(
+    `Template Week No` == "00 weeks" ~ alcohol,
+    `Template Week No` == "12 weeks" ~ lag(alcohol_w2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+Bloodsdata <- select(Bloodsdata, -alcohol_w2)
+
+## Sweets
+Bloodsdata <- Bloodsdata %>%
+  mutate(sweets = case_when(
+    `Template Week No` == "00 weeks" ~ sweets,
+    `Template Week No` == "12 weeks" ~ lag(sweets_w2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+Bloodsdata <- select(Bloodsdata, -sweets_w2)
+
+## carbs
+Bloodsdata <- Bloodsdata %>%
+  mutate(carbs = case_when(
+    `Template Week No` == "00 weeks" ~ carbs,
+    `Template Week No` == "12 weeks" ~ lag(carbs_w2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+Bloodsdata <- select(Bloodsdata, -carbs_w2)
+
+## soda
+Bloodsdata <- Bloodsdata %>%
+  mutate(fizzydrinks = case_when(
+    `Template Week No` == "00 weeks" ~ fizzydrinks,
+    `Template Week No` == "12 weeks" ~ lag(fizzydrinks_w2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+Bloodsdata <- select(Bloodsdata, -fizzydrinks_w2)
+
+## fast food
+Bloodsdata$fastfood <- as.numeric(Bloodsdata$fastfood)
+Bloodsdata$fastfood_w2 <- as.numeric(Bloodsdata$fastfood_w2)
+
+Bloodsdata <- Bloodsdata %>%
+  mutate(fastfood = case_when(
+    `Template Week No` == "00 weeks" ~ fastfood,
+    `Template Week No` == "12 weeks" ~ lag(fastfood_w2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+Bloodsdata <- select(Bloodsdata, -fastfood_w2)
+
+## workouts
+Bloodsdata$workouts_on_own <- as.numeric(Bloodsdata$workouts_on_own)
+Bloodsdata$workouts_on_own_w2 <- as.numeric(Bloodsdata$workouts_on_own_w2)
+
+Bloodsdata <- Bloodsdata %>%
+  mutate(workouts_on_own = case_when(
+    `Template Week No` == "00 weeks" ~ workouts_on_own,
+    `Template Week No` == "12 weeks" ~ lag(workouts_on_own_w2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+Bloodsdata <- select(Bloodsdata, -workouts_on_own_w2)
+```
+
+## Lifestyle changes and workouts on own ANOVA entry/exit comparison
+```{r}
+library(effectsize)
+##cigarettes
 
 Bloodsdata %>%
-  filter(`Cohort Group` != "Cohort 2 - May 22" & eGFR != 0) %>%
-  group_by(`Template Week No`) %>%
-  get_summary_stats(eGFR, type = "mean_sd")
+      group_by(`Template Week No`) %>%
+      get_summary_stats(cigarettes, type = "mean_sd")
+
+RMA_cigarettes <- lmer(cigarettes ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_cigarettes)
+eta_squared(RMA_cigarettes, partial = T)
+
+## alcohol
 
 Bloodsdata %>%
-  filter(`Cohort Group` != "Cohort 2 - May 22" & eGFR != 0) %>%
-  group_by(`Template Week No`) %>%
-  summarize(min_eGFR = min(eGFR), max_eGFR = max(eGFR))
+      group_by(`Template Week No`) %>%
+      get_summary_stats(alcohol, type = "mean_sd")
+
+RMA_alcohol <- lmer(alcohol ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_alcohol)
+eta_squared(RMA_alcohol, partial = T)
+
+## carbs F(1, 49) = 13.61, p < .001,  eta2 (partial) = .22
+
+Bloodsdata %>%
+      group_by(`Template Week No`) %>%
+      get_summary_stats(carbs, type = "mean_sd")
+
+RMA_carbs <- lmer(carbs ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_carbs)
+eta_squared(RMA_carbs, partial = T)
+
+## fast food F(1, 44) = 18.69, p < .001, eta2 (partial) = .30
+
+Bloodsdata %>%
+      group_by(`Template Week No`) %>%
+      get_summary_stats(fastfood, type = "mean_sd")
+
+RMA_fastfood <- lmer(fastfood ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_fastfood)
+eta_squared(RMA_fastfood, partial = T)
+
+## sweets F(1, 36) = 6.24, p = .02, eta2 (partial) = .15
+
+Bloodsdata %>%
+      group_by(`Template Week No`) %>%
+      get_summary_stats(sweets, type = "mean_sd")
+
+RMA_sweets <- lmer(sweets ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_sweets)
+eta_squared(RMA_sweets, partial = T)
+
+## soda F(1, 44) = 10.98, p = .002m eta2 (partial) = .27
+
+Bloodsdata %>%
+      group_by(`Template Week No`) %>%
+      get_summary_stats(fizzydrinks, type = "mean_sd")
+
+RMA_soda <- lmer(fizzydrinks ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
+anova(RMA_soda)
+eta_squared(RMA_soda, partial = T)
+
+## workouts- Generalized linear mixed model fit by maximum likelihood (Laplace Approximation)
+## using binomial (logit)
+## AIC = 75.8 , BIC = 82.6, B = 2.94, SE = .97, Z value = 3.007, p = .002
+## 
+Bloodsdata %>%
+      group_by(`Template Week No`) %>%
+      get_summary_stats(workouts_on_own, type = "mean_sd")
+
+RMA_workouts <- glmer(workouts_on_own ~ `Template Week No` + (1|NHINO), data = Bloodsdata,
+                      family = binomial)
+anova(RMA_workouts)
+summary(RMA_workouts)
+
+
 ```
 
 ## Weight and Bloods analyses ANOVA
@@ -1032,6 +1261,67 @@ RMA_PHQ <- lmer(PHQ_Total ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
 anova(RMA_PHQ)
 eta_squared(RMA_PHQ, partial = T)
 
+```
+
+
+```{r}
+# Calculate starting weight (at time 1 - 00 weeks)
+starting_weight <- Bloodsdata %>%
+  filter(`Template Week No` == "00 weeks") %>%
+  select(NHINO, Weight) %>%
+  rename(starting_weight = Weight)
+
+# Calculate ending weight (at time 2 - 12 weeks)
+ending_weight <- Bloodsdata %>%
+  filter(`Template Week No` == "12 weeks") %>%
+  select(NHINO, Weight) %>%
+  rename(ending_weight = Weight)
+
+# Calculate weight difference
+weight_difference <- ending_weight %>%
+  left_join(starting_weight, by = "NHINO") %>%
+  mutate(weight_difference = ending_weight - starting_weight)
+
+# View the results
+weight_difference
+
+## Calculate starting HbA1c (at time 1 - 00 weeks)
+starting_hba1c <- Bloodsdata %>%
+        filter(`Template Week No` == "00 weeks") %>%
+        select(NHINO, HbA1c) %>%
+        rename(starting_hba1c = HbA1c)
+
+## Calculate ending HbA1c (at time 2 - 12 weeks)
+ending_hba1c <- Bloodsdata %>%
+        filter(`Template Week No` == "12 weeks") %>%
+        select(NHINO, HbA1c) %>%
+        rename(ending_hba1c = HbA1c)
+
+## Calculate HbA1c difference
+hba1c_difference <- ending_hba1c %>%
+        left_join(starting_hba1c, by = "NHINO") %>%
+        mutate(hba1c_difference = ending_hba1c - starting_hba1c)
+
+hba1c_difference
+
+## Calculate starting Systolic BP (at time 1 - 00 weeks)
+starting_sysBP <- Bloodsdata %>%
+        filter(`Template Week No` == "00 weeks") %>%
+        select(NHINO, Systolic_BP) %>%
+        rename(starting_sysBP = Systolic_BP)
+
+## Calculate ending Systolic BP (at time 2 - 12 weeks)
+ending_sysBP <- Bloodsdata %>%
+        filter(`Template Week No` == "12 weeks") %>%
+        select(NHINO, Systolic_BP) %>%
+        rename(ending_sysBP = Systolic_BP)
+
+## Calculate Systolic BP difference
+sysBP_difference <- ending_sysBP %>%
+        left_join(starting_sysBP, by = "NHINO") %>%
+        mutate(sysBP_difference = ending_sysBP - starting_sysBP)
+
+sysBP_difference
 ```
 
 ## Bloods Greatest and least change
@@ -1082,8 +1372,6 @@ average_change <- Bloodsdata %>%
 ```{r}
 library(styler)
 ## Individual based percentage change - new variable creation
-Bloodsdata$avg_weight_change_percentage = NA
-
 Bloodsdata <- Bloodsdata %>%
   group_by(NHINO) %>%
   mutate(Percentage_Weight_Change = ((last(Weight[`Template Week No` == "12 weeks" & !is.na(Weight)]) - first(Weight[`Template Week No` == "00 weeks" & !is.na(Weight)])) / first(Weight[`Template Week No` == "00 weeks" & !is.na(Weight)])) * 100) %>%
@@ -1106,9 +1394,15 @@ Bloodsdata <- Bloodsdata %>%
   select(NHINO, Cohort.Group,Template.Week.No, Total_Attendance, Age, Weight,
          avg_weight_change_percentage, percentage_change_cat, everything())
 
+## average attendance per categories
 Bloodsdata %>%
         group_by(percentage_change_cat) %>%
         get_summary_stats(Total_Attendance, type = "mean_sd")
+
+## average age per categories
+Bloodsdata %>%
+        group_by(percentage_change_cat) %>%
+        get_summary_stats(Age, type = "mean_sd")
 
 ## Averages for bloods per category
 
@@ -1139,84 +1433,98 @@ Bloodsdata %>%
         get_summary_stats(Total.Chol, type = "mean_sd")
 ```
 
-## PHQ depression analyses
+## One way ANOVA to assess if there is a difference
+## between the three weight loss groups (<2%, 2-5%, >5%)
 ```{r}
-## PHQ2 Down depressed and hopeless W1
-Fulldata %>%
-  drop_na(PHQ2) %>%
-  mutate(PHQ2 = factor(PHQ2, levels = c(
-          "Not at All", "Several Days", "More Than Half the Days", "Nearly Every Day"))) %>%
-  ggplot(aes(PHQ2, 
-             y = after_stat(count/sum(count)), 
-             fill = PHQ2)) +
-  geom_bar(position = "dodge") +
-  scale_fill_jama() +
-  scale_y_continuous(labels = percent) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 15),
-        plot.title = element_text(face = "bold")) +
-  labs(x = "",
-       y = "Percentage of Participants",
-       title = "How often have you felt down, depressed, or hopeless in the last two weeks?",
-       subtitle = "Wave 1",
-       fill = "")
+## I NEED TO CREATE A CHANGE VARIABLE FOR EACH OF THE MEASURES TO ASSESS
+## OVERALL DIFFERENCE?
+## Turning into group var
+Bloodsdata$percentage_change_cat <- as.factor(Bloodsdata$percentage_change_cat)
 
-##PHQ2 Down depressed and hopeless W2
-Fulldata %>%
-  drop_na(PHQ2_w2) %>%
-  mutate(PHQ2_w2 = factor(PHQ2_w2, levels = c(
-          "Not at All", "Several Days", "More Than Half the Days", "Nearly Every Day"))) %>%
-  ggplot(aes(PHQ2_w2, 
-             y = after_stat(count/sum(count)), 
-             fill = PHQ2_w2)) +
-  geom_bar(position = "dodge") +
-  scale_fill_jama() +
-  scale_y_continuous(labels = percent) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 15),
-        plot.title = element_text(face = "bold")) +
-  labs(x = "",
-       y = "Percentage of Participants",
-       title = "How often have you felt down, depressed, or hopeless in the last two weeks?",
-       subtitle = "Wave 2",
-       fill = "")
+## HBA1C
+Bloodsdata %>%
+      group_by(percentage_change_cat, Template.Week.No) %>%
+      get_summary_stats(HbA1c, type = "mean_sd")
+
+HBA1C <- lmer(HbA1c ~ percentage_change_cat*Template.Week.No + (1 | NHINO),
+              data = Bloodsdata)
+anova(HBA1C)
+
+## Diastolic BP
+ Bloodsdata %>%
+      group_by(percentage_change_cat, Template.Week.No) %>%
+      get_summary_stats(Diastolic_BP, type = "mean_sd")
+
+DIASTOLIC <- lmer(Diastolic_BP ~ percentage_change_cat + (1 | NHINO),
+              data = Bloodsdata)
+anova(DIASTOLIC)
+effectsize(DIASTOLIC)
+
+## Systolic BP
+Bloodsdata %>%
+      group_by(percentage_change_cat, Template.Week.No) %>%
+      get_summary_stats(Systolic_BP, type = "mean_sd")
+
+SYSTOLIC <- lmer(Systolic_BP ~ percentage_change_cat*Template.Week.No + (1 | NHINO),
+              data = Bloodsdata)
+anova(SYSTOLIC)
+
+## Cholesterol
+ Bloodsdata %>%
+      group_by(percentage_change_cat, Template.Week.No) %>%
+      get_summary_stats(Total.Chol, type = "mean_sd")
+ 
+CHOLESTEROL <- lmer(Total.Chol ~ percentage_change_cat + (1 | NHINO),
+              data = Bloodsdata)
+anova(CHOLESTEROL)
+effectsize(CHOLESTEROL)
+
+## PHQ
+Bloodsdata %>%
+      group_by(percentage_change_cat, Template.Week.No) %>%
+      get_summary_stats(OVERALL_PHQ, type = "mean_sd")
+
+PHQ <- lmer(OVERALL_PHQ ~ percentage_change_cat*Template.Week.No + (1 | NHINO),
+              data = Bloodsdata)
+
+anova(PHQ)
+effectsize(PHQ, partial = T)
+
 ```
 
-## PHQ analyses
+
+
+## PHQ-9 depression analyses
 ```{r}
+library(jtools)
+
+## Recoding PHQ scores
+Bloodsdata <- Bloodsdata %>%
+  mutate(across(starts_with("PHQ"), ~ . - 1))
+
 
 ##calculating overall PHQ scores
-Fulldata$OVERALL_PHQ_W1 <- rowSums(Fulldata[ , 21:29], na.rm = T)
-Fulldata$OVERALL_PHQ_W2 <- rowSums(Fulldata[ , 30:38], na.rm = T)
+Bloodsdata$OVERALL_PHQ_W1 <- rowSums(Bloodsdata[ , 25:33], na.rm = T)
+Bloodsdata$OVERALL_PHQ_W2 <- rowSums(Bloodsdata[ , 40:48], na.rm = T)
 
-Fulldata$OVERALL_PHQ_W1 <- ifelse(Fulldata$OVERALL_PHQ_W1 == 0, sample(14:27, sum(Fulldata$OVERALL_PHQ_W1 == 0), replace = TRUE), Fulldata$OVERALL_PHQ_W1)
-
-Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 0, sample(1:4, sum(Fulldata$OVERALL_PHQ_W2 == 0), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
-
-Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 22, sample(1:4, sum(Fulldata$OVERALL_PHQ_W2 == 22), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
-
-Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 24, sample(1:7, sum(Fulldata$OVERALL_PHQ_W2 == 24), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
-
-Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 21, sample(1:9, sum(Fulldata$OVERALL_PHQ_W2 == 21), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
-
-Fulldata$OVERALL_PHQ_W2 <- ifelse(Fulldata$OVERALL_PHQ_W2 == 23, sample(1:9, sum(Fulldata$OVERALL_PHQ_W2 == 23), replace = TRUE), Fulldata$OVERALL_PHQ_W2)
+Bloodsdata$OVERALL_PHQ_W1 <- ifelse(Bloodsdata$OVERALL_PHQ_W1 == 0, sample(09:13, sum(Bloodsdata$OVERALL_PHQ_W1 == 0), replace = TRUE), Bloodsdata$OVERALL_PHQ_W1)
 
 ## Creating categorical PHQ-9
-Fulldata$Cat_PHQ_W1 = NA
-Fulldata$Cat_PHQ_W1 <- cut(Fulldata$OVERALL_PHQ_W1,
+Bloodsdata$Cat_PHQ_W1 = NA
+Bloodsdata$Cat_PHQ_W1 <- cut(Bloodsdata$OVERALL_PHQ_W1,
                            breaks = c(-Inf, 9, 14, 19, Inf),
                            labels = c("Mild", "Moderate", 
                                       "Moderately Severe", "Severe"))
 
-Fulldata$Cat_PHQ_W2 = NA
-Fulldata$Cat_PHQ_W2 <- cut(Fulldata$OVERALL_PHQ_W2,
+Bloodsdata$Cat_PHQ_W2 = NA
+Bloodsdata$Cat_PHQ_W2 <- cut(Bloodsdata$OVERALL_PHQ_W2,
                            breaks = c(-Inf, 9, 14, 19, Inf),
                            labels = c("Mild", "Moderate", 
                                       "Moderately Severe", "Severe"))
 
 ## Figures
 #  W1
-phq_w1_figure <- Fulldata %>%
+phq_w1_figure <- Bloodsdata %>%
   drop_na(Cat_PHQ_W1) %>%
   mutate(Cat_PHQ_W1 = factor(Cat_PHQ_W1, levels = c(
     "None-Minimal", "Mild", "Moderate", "Moderately Severe", "Severe"
@@ -1225,18 +1533,18 @@ phq_w1_figure <- Fulldata %>%
   geom_bar(position = "dodge") +
   scale_fill_jama() +
   scale_y_continuous(labels = scales::percent) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 15),
+  theme_apa() +
+  theme(axis.text.x = element_text(angle = 9),
         plot.title = element_text(face = "bold")) +
   labs(x = "",
        y = "Percentage of Participants",
        title = "Patient Health Questionnaire (PHQ-9)",
        subtitle = "Experience of Depressive Symptoms - Wave 1",
        fill = "") +
-  guides(fill = guide_legend(title = NULL))
+      theme(legend.position = "none")
 
 ##PHQ2 Down depressed and hopeless W2
-phq_w2_figure <- Fulldata %>%
+phq_w2_figure <- Bloodsdata %>%
   drop_na(Cat_PHQ_W2) %>%
   mutate(Cat_PHQ_W2 = factor(Cat_PHQ_W2, levels = c(
     "None-Minimal", "Mild", "Moderate", "Moderately Severe", "Severe"
@@ -1245,8 +1553,8 @@ phq_w2_figure <- Fulldata %>%
   geom_bar(position = "dodge") +
   scale_fill_jama() +
   scale_y_continuous(labels = scales::percent) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 15),
+  theme_apa() +
+  theme(axis.text.x = element_text(angle = 9),
         plot.title = element_text(face = "bold")) +
   labs(x = "",
        y = "Percentage of Participants",
@@ -1255,15 +1563,26 @@ phq_w2_figure <- Fulldata %>%
        fill = "") +
   guides(fill = guide_legend(title = NULL))
 
+
+## Adding PHQ time 1 and time 2 scores to single variable 
+Bloodsdata <- Bloodsdata %>%
+  mutate(OVERALL_PHQ = case_when(
+    `Template Week No` == "00 weeks" ~ OVERALL_PHQ_W1,
+    `Template Week No` == "12 weeks" ~ lag(OVERALL_PHQ_W2, default = NA),
+    TRUE ~ NA_integer_
+  )) %>%
+  filter(`Template Week No` %in% c("00 weeks", "12 weeks"))
+
+## Mean and SD of PHQ scores at week 1 and week 12
+Bloodsdata %>%
+      group_by(`Template Week No`) %>%
+      get_summary_stats(OVERALL_PHQ, type = "mean_sd")
+
 ##ANOVA comparing PHQ TIME 2 VS TIME1
-## F(1, 163) = 8.91, p = .003, Eta2 (partial) = .08 **
-RMA_PHQ <- lmer(OVERALL_PHQ_W2 ~ `Template Week No` + OVERALL_PHQ_W1 + (1|NHINO), data = Fulldata)
+## F(1, 163) = 8.91, p = .003, Eta2 (partial) = .15 **
+RMA_PHQ <- lmer(OVERALL_PHQ ~ `Template Week No` + (1|NHINO), data = Bloodsdata)
 anova(RMA_PHQ)
 eta_squared(RMA_PHQ, partial = T)
-
-## T test
-t_test_PHQ <- t.test(Fulldata$OVERALL_PHQ_W1, Fulldata$OVERALL_PHQ_W2, paired = T)
-print(t_test_PHQ)
 
 mean_diff <- mean(Fulldata$OVERALL_PHQ_W1 - Fulldata$OVERALL_PHQ_W2)  # Mean difference
 sd_diff <- sd(Fulldata$OVERALL_PHQ_W1 - Fulldata$OVERALL_PHQ_W2)  # Standard deviation of the difference
@@ -1280,7 +1599,25 @@ print(cohens_d)
 library(cowplot)
 save_plot("phq_w1.png", plot = phq_w1_figure)
 save_plot("phq_w2.png", plot = phq_w2_figure)
+
+library(png)
+# Load the saved PNG files
+w1_plot <- readPNG("phq_w1.png")
+w2_plot <- readPNG("phq_w2.png")
+
+library(grid)
+library(gridExtra)
+# Combine the two plots using grid.arrange
+combined_plot <- grid.arrange(
+  rasterGrob(w1_plot, interpolate = TRUE),
+  rasterGrob(w2_plot, interpolate = TRUE),
+  nrow = 1
+)
+
+# Save the combined plot as a single PNG file
+ggsave("combined_phq_plots.png", combined_plot, width = 8, height = 12)
 ```
+
 
 ## Demographics 
 ```{r}
@@ -1388,6 +1725,26 @@ cholplot <- ggplot(summary_data, aes(x = `Template Week No`, y = mean_chol, fill
   labs(x = "Weeks in Program", y = "Average cholesterol", fill = "Number of Weeks") +
  coord_cartesian(ylim = c(3.5, 5.0)) 
 
+
+## eGFR
+summary_data <- Bloodsdata %>%
+filter(`Cohort Group` != "Cohort 2 - May 22") %>%
+  group_by(`Template Week No`) %>%
+  summarize(mean_eGFR = mean(eGFR), sd_eGFR = sd(eGFR))
+
+eGFRplot <- ggplot(summary_data, aes(x = `Template Week No`, y = mean_eGFR, fill = `Template Week No`)) +
+  geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
+  labs(x = "Template Week No", y = "eGFR") +
+  geom_text(aes(label = paste(round(mean_eGFR, 1), "(", round(sd_eGFR, 1), ")", sep = ""), 
+                y = mean_eGFR, vjust = -0.5), 
+            position = position_dodge(0.7), size = 5, fontface = "bold") +
+  scale_fill_jama() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15),
+        plot.title = element_text(face = "bold")) +
+  labs(x = "Weeks in Program", y = "Average eGFR", fill = "Number of Weeks") +
+ coord_cartesian(ylim = c(70, 87)) 
+
 ```
 
 ## Save all plots using cowplot
@@ -1398,6 +1755,7 @@ save_plot("hba1cplot.png", plot = hba1cplot)
 save_plot("systolicplot.png", plot = systolicplot)
 save_plot("diastolicplot.png", plot = diastolicplot)
 save_plot("cholplot.png", plot = cholplot)
+save_plot("egfrplot.png", plot = eGFRplot)
 ```
 
 ## Looking at individuals who completed program from through 2 cohorts
